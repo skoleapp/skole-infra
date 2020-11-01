@@ -57,9 +57,9 @@ data "template_file" "container_definitions_staging" {
 
 terraform {
   backend "s3" {
-    bucket = "skole-terraform-state"
-    region = "eu-central-1"
-    key = "terraform.tfstate"
+    bucket  = "skole-terraform-state"
+    region  = "eu-central-1"
+    key     = "terraform.tfstate"
     encrypt = true
   }
 }
@@ -124,7 +124,7 @@ resource "aws_iam_instance_profile" "ecs_instance_profile" {
 
 # VPC
 
-resource "aws_vpc" "vpc" {
+resource "aws_vpc" "this" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
@@ -134,16 +134,16 @@ resource "aws_vpc" "vpc" {
   }
 }
 
-resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.vpc.id
+resource "aws_internet_gateway" "this" {
+  vpc_id = aws_vpc.this.id
 
   tags = {
     Name = "skole-igw"
   }
 }
 
-resource "aws_subnet" "subnet_a" {
-  vpc_id                  = aws_vpc.vpc.id
+resource "aws_subnet" "a" {
+  vpc_id                  = aws_vpc.this.id
   cidr_block              = "10.0.0.0/24"
   availability_zone       = "eu-central-1a"
   map_public_ip_on_launch = true
@@ -153,8 +153,8 @@ resource "aws_subnet" "subnet_a" {
   }
 }
 
-resource "aws_subnet" "subnet_b" {
-  vpc_id                  = aws_vpc.vpc.id
+resource "aws_subnet" "b" {
+  vpc_id                  = aws_vpc.this.id
   cidr_block              = "10.0.24.0/24"
   availability_zone       = "eu-central-1b"
   map_public_ip_on_launch = true
@@ -164,8 +164,8 @@ resource "aws_subnet" "subnet_b" {
   }
 }
 
-resource "aws_subnet" "subnet_c" {
-  vpc_id                  = aws_vpc.vpc.id
+resource "aws_subnet" "c" {
+  vpc_id                  = aws_vpc.this.id
   cidr_block              = "10.0.48.0/24"
   availability_zone       = "eu-central-1c"
   map_public_ip_on_launch = true
@@ -175,12 +175,12 @@ resource "aws_subnet" "subnet_c" {
   }
 }
 
-resource "aws_route_table" "rtb" {
-  vpc_id = aws_vpc.vpc.id
+resource "aws_route_table" "this" {
+  vpc_id = aws_vpc.this.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igw.id
+    gateway_id = aws_internet_gateway.this.id
   }
 
   tags = {
@@ -188,24 +188,24 @@ resource "aws_route_table" "rtb" {
   }
 }
 
-resource "aws_route_table_association" "rtb_association_a" {
-  subnet_id      = aws_subnet.subnet_a.id
-  route_table_id = aws_route_table.rtb.id
+resource "aws_route_table_association" "a" {
+  subnet_id      = aws_subnet.a.id
+  route_table_id = aws_route_table.this.id
 }
 
-resource "aws_route_table_association" "rtb_association_b" {
-  subnet_id      = aws_subnet.subnet_b.id
-  route_table_id = aws_route_table.rtb.id
+resource "aws_route_table_association" "b" {
+  subnet_id      = aws_subnet.b.id
+  route_table_id = aws_route_table.this.id
 }
 
-resource "aws_route_table_association" "rtb_association_c" {
-  subnet_id      = aws_subnet.subnet_c.id
-  route_table_id = aws_route_table.rtb.id
+resource "aws_route_table_association" "c" {
+  subnet_id      = aws_subnet.c.id
+  route_table_id = aws_route_table.this.id
 }
 
 resource "aws_security_group" "sg" {
   name   = "skole-sg"
-  vpc_id = aws_vpc.vpc.id
+  vpc_id = aws_vpc.this.id
 
   ingress {
     from_port       = 0
@@ -215,10 +215,10 @@ resource "aws_security_group" "sg" {
   }
 
   ingress {
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    self = true
+    from_port = 5432
+    to_port   = 5432
+    protocol  = "tcp"
+    self      = true
   }
 
   egress {
@@ -236,7 +236,7 @@ resource "aws_security_group" "sg" {
 
 resource "aws_security_group" "elb_sg" {
   name   = "skole-elb-sg"
-  vpc_id = aws_vpc.vpc.id
+  vpc_id = aws_vpc.this.id
 
   ingress {
     from_port   = 80
@@ -279,22 +279,22 @@ resource "aws_ecr_repository" "frontend_staging" {
   name = "frontend-staging"
 }
 
-resource "aws_ecr_lifecycle_policy" "backend_lifecycle" {
+resource "aws_ecr_lifecycle_policy" "backend" {
   repository = aws_ecr_repository.backend.name
   policy     = var.ecr_policy_keep_10
 }
 
-resource "aws_ecr_lifecycle_policy" "backend_staging_lifecycle" {
+resource "aws_ecr_lifecycle_policy" "backend_staging" {
   repository = aws_ecr_repository.backend_staging.name
   policy     = var.ecr_policy_keep_10
 }
 
-resource "aws_ecr_lifecycle_policy" "frontend_lifecycle" {
+resource "aws_ecr_lifecycle_policy" "frontend" {
   repository = aws_ecr_repository.frontend.name
   policy     = var.ecr_policy_keep_10
 }
 
-resource "aws_ecr_lifecycle_policy" "frontend_staging_lifecycle" {
+resource "aws_ecr_lifecycle_policy" "frontend_staging" {
   repository = aws_ecr_repository.frontend_staging.name
   policy     = var.ecr_policy_keep_10
 }
@@ -302,23 +302,23 @@ resource "aws_ecr_lifecycle_policy" "frontend_staging_lifecycle" {
 
 # ECS
 
-resource "aws_ecs_cluster" "cluster" {
+resource "aws_ecs_cluster" "prod" {
   name = "skole-cluster"
 }
 
-resource "aws_ecs_cluster" "staging_cluster" {
+resource "aws_ecs_cluster" "staging" {
   name = "skole-staging-cluster"
 }
 
 
 # EC2
 
-resource "aws_autoscaling_group" "asg" {
+resource "aws_autoscaling_group" "prod" {
   name                 = "skole-asg"
   min_size             = 1
   max_size             = 1
-  launch_configuration = aws_launch_configuration.lc.name
-  vpc_zone_identifier  = [aws_subnet.subnet_a.id, aws_subnet.subnet_b.id, aws_subnet.subnet_c.id]
+  launch_configuration = aws_launch_configuration.prod.name
+  vpc_zone_identifier  = [aws_subnet.a.id, aws_subnet.b.id, aws_subnet.c.id]
 
   tag {
     key                 = "Name"
@@ -331,12 +331,12 @@ resource "aws_autoscaling_group" "asg" {
   }
 }
 
-resource "aws_autoscaling_group" "staging_asg" {
+resource "aws_autoscaling_group" "staging" {
   name                 = "skole-staging-asg"
   min_size             = 1
   max_size             = 1
-  launch_configuration = aws_launch_configuration.staging_lc.name
-  vpc_zone_identifier  = [aws_subnet.subnet_a.id, aws_subnet.subnet_b.id, aws_subnet.subnet_c.id]
+  launch_configuration = aws_launch_configuration.staging.name
+  vpc_zone_identifier  = [aws_subnet.a.id, aws_subnet.b.id, aws_subnet.c.id]
 
   tag {
     key                 = "Name"
@@ -350,7 +350,7 @@ resource "aws_autoscaling_group" "staging_asg" {
 }
 
 
-resource "aws_launch_configuration" "lc" {
+resource "aws_launch_configuration" "prod" {
   name_prefix          = "skole-lc"
   image_id             = "ami-09509e8f8dea8ab83"
   instance_type        = "t2.small"
@@ -364,7 +364,7 @@ resource "aws_launch_configuration" "lc" {
   }
 }
 
-resource "aws_launch_configuration" "staging_lc" {
+resource "aws_launch_configuration" "staging" {
   name_prefix          = "skole-staging-lc"
   image_id             = "ami-09509e8f8dea8ab83"
   instance_type        = "t2.small"
@@ -379,26 +379,26 @@ resource "aws_launch_configuration" "staging_lc" {
 }
 
 
-resource "aws_lb" "elb" {
+resource "aws_lb" "this" {
   name               = "skole-elb"
   load_balancer_type = "application"
   security_groups    = [aws_security_group.elb_sg.id]
 
   subnet_mapping {
-    subnet_id = aws_subnet.subnet_a.id
+    subnet_id = aws_subnet.a.id
   }
 
   subnet_mapping {
-    subnet_id = aws_subnet.subnet_b.id
+    subnet_id = aws_subnet.b.id
   }
 
   subnet_mapping {
-    subnet_id = aws_subnet.subnet_c.id
+    subnet_id = aws_subnet.c.id
   }
 }
 
 resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.elb.arn
+  load_balancer_arn = aws_lb.this.arn
   port              = "80"
   protocol          = "HTTP"
 
@@ -414,7 +414,7 @@ resource "aws_lb_listener" "http" {
 }
 
 resource "aws_lb_listener" "https" {
-  load_balancer_arn = aws_lb.elb.arn
+  load_balancer_arn = aws_lb.this.arn
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
@@ -539,8 +539,8 @@ resource "aws_lb_target_group" "backend" {
   port        = 80
   protocol    = "HTTP"
   target_type = "instance"
-  vpc_id      = aws_vpc.vpc.id
-  depends_on  = [aws_lb.elb]
+  vpc_id      = aws_vpc.this.id
+  depends_on  = [aws_lb.this]
 
   health_check {
     interval = 60
@@ -554,8 +554,8 @@ resource "aws_lb_target_group" "backend_staging" {
   port        = 80
   protocol    = "HTTP"
   target_type = "instance"
-  vpc_id      = aws_vpc.vpc.id
-  depends_on  = [aws_lb.elb]
+  vpc_id      = aws_vpc.this.id
+  depends_on  = [aws_lb.this]
 
   health_check {
     interval = 60
@@ -569,8 +569,8 @@ resource "aws_lb_target_group" "frontend" {
   port        = 80
   protocol    = "HTTP"
   target_type = "instance" # TODO: change to "lambda"
-  vpc_id      = aws_vpc.vpc.id
-  depends_on  = [aws_lb.elb]
+  vpc_id      = aws_vpc.this.id
+  depends_on  = [aws_lb.this]
 
   health_check {
     interval = 60
@@ -584,8 +584,8 @@ resource "aws_lb_target_group" "frontend_staging" {
   port        = 80
   protocol    = "HTTP"
   target_type = "instance" # TODO: change to "lambda"
-  vpc_id      = aws_vpc.vpc.id
-  depends_on  = [aws_lb.elb]
+  vpc_id      = aws_vpc.this.id
+  depends_on  = [aws_lb.this]
 
   health_check {
     interval = 60
@@ -594,10 +594,10 @@ resource "aws_lb_target_group" "frontend_staging" {
   }
 }
 
-resource "aws_ecs_service" "service" {
+resource "aws_ecs_service" "prod" {
   name                               = "skole-service"
-  cluster                            = aws_ecs_cluster.cluster.id
-  task_definition                    = aws_ecs_task_definition.task_definition.arn
+  cluster                            = aws_ecs_cluster.prod.id
+  task_definition                    = aws_ecs_task_definition.prod.family
   desired_count                      = 1
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
@@ -615,10 +615,10 @@ resource "aws_ecs_service" "service" {
   }
 }
 
-resource "aws_ecs_service" "staging_service" {
+resource "aws_ecs_service" "staging" {
   name                               = "skole-staging-service"
-  cluster                            = aws_ecs_cluster.staging_cluster.id
-  task_definition                    = aws_ecs_task_definition.task_definition_staging.arn
+  cluster                            = aws_ecs_cluster.staging.id
+  task_definition                    = aws_ecs_task_definition.staging.family
   desired_count                      = 1
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
@@ -637,14 +637,16 @@ resource "aws_ecs_service" "staging_service" {
 }
 
 
-resource "aws_ecs_task_definition" "task_definition" {
-  family                = "skole-task"
+resource "aws_ecs_task_definition" "prod" {
+  family = "skole-task"
+  # TODO make this role in this config.
   execution_role_arn    = "arn:aws:iam::630869177434:role/skole-ecs-execution-role"
   container_definitions = data.template_file.container_definitions.rendered
 }
 
-resource "aws_ecs_task_definition" "task_definition_staging" {
-  family                = "skole-staging-task"
+resource "aws_ecs_task_definition" "staging" {
+  family = "skole-staging-task"
+  # TODO use the made role here.
   execution_role_arn    = "arn:aws:iam::630869177434:role/skole-ecs-execution-role"
   container_definitions = data.template_file.container_definitions_staging.rendered
 }
@@ -777,8 +779,8 @@ resource "aws_route53_record" "www_skoleapp_com" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.elb.dns_name
-    zone_id                = aws_lb.elb.zone_id
+    name                   = aws_lb.this.dns_name
+    zone_id                = aws_lb.this.zone_id
     evaluate_target_health = true
   }
 }
@@ -789,8 +791,8 @@ resource "aws_route53_record" "skoleapp_com" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.elb.dns_name
-    zone_id                = aws_lb.elb.zone_id
+    name                   = aws_lb.this.dns_name
+    zone_id                = aws_lb.this.zone_id
     evaluate_target_health = true
   }
 }
@@ -801,8 +803,8 @@ resource "aws_route53_record" "api_skoleapp_com" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.elb.dns_name
-    zone_id                = aws_lb.elb.zone_id
+    name                   = aws_lb.this.dns_name
+    zone_id                = aws_lb.this.zone_id
     evaluate_target_health = true
   }
 }
@@ -813,8 +815,8 @@ resource "aws_route53_record" "dev_skoleapp_com" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.elb.dns_name
-    zone_id                = aws_lb.elb.zone_id
+    name                   = aws_lb.this.dns_name
+    zone_id                = aws_lb.this.zone_id
     evaluate_target_health = true
   }
 }
@@ -825,8 +827,8 @@ resource "aws_route53_record" "dev_api_skoleapp_com" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.elb.dns_name
-    zone_id                = aws_lb.elb.zone_id
+    name                   = aws_lb.this.dns_name
+    zone_id                = aws_lb.this.zone_id
     evaluate_target_health = true
   }
 }
@@ -837,8 +839,8 @@ resource "aws_route53_record" "www_skole_fi" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.elb.dns_name
-    zone_id                = aws_lb.elb.zone_id
+    name                   = aws_lb.this.dns_name
+    zone_id                = aws_lb.this.zone_id
     evaluate_target_health = true
   }
 }
@@ -849,8 +851,8 @@ resource "aws_route53_record" "skole_fi" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.elb.dns_name
-    zone_id                = aws_lb.elb.zone_id
+    name                   = aws_lb.this.dns_name
+    zone_id                = aws_lb.this.zone_id
     evaluate_target_health = true
   }
 }
@@ -861,8 +863,8 @@ resource "aws_route53_record" "www_skole_io" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.elb.dns_name
-    zone_id                = aws_lb.elb.zone_id
+    name                   = aws_lb.this.dns_name
+    zone_id                = aws_lb.this.zone_id
     evaluate_target_health = true
   }
 }
@@ -873,8 +875,8 @@ resource "aws_route53_record" "skole_io" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.elb.dns_name
-    zone_id                = aws_lb.elb.zone_id
+    name                   = aws_lb.this.dns_name
+    zone_id                = aws_lb.this.zone_id
     evaluate_target_health = true
   }
 }
@@ -961,7 +963,7 @@ resource "aws_db_instance" "this" {
 
 resource "aws_db_subnet_group" "this" {
   name       = "skole-rds-subnet-group"
-  subnet_ids = [aws_subnet.subnet_a.id, aws_subnet.subnet_b.id, aws_subnet.subnet_c.id]
+  subnet_ids = [aws_subnet.a.id, aws_subnet.b.id, aws_subnet.c.id]
 }
 
 
@@ -969,7 +971,7 @@ resource "aws_db_subnet_group" "this" {
 
 resource "aws_s3_bucket" "terraform_state" {
   bucket = "skole-terraform-state"
-  acl = "private"
+  acl    = "private"
 
   server_side_encryption_configuration {
     rule {
