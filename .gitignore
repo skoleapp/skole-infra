@@ -1,0 +1,6 @@
+.terraform/
+
+.DS_Store
+
+.idea/
+.vscode/
