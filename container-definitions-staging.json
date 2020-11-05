@@ -1,0 +1,116 @@
+[
+  {
+    "name": "backend_staging",
+    "image": "${BACKEND_STAGING_ECR}:latest",
+    "cpu": 170,
+    "memoryReservation": 332,
+    "portMappings": [
+      {
+        "containerPort": 8000,
+        "protocol": "tcp"
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "backend-staging-logs",
+        "awslogs-region": "eu-central-1"
+      }
+    },
+    "essential": true,
+    "secrets": [
+      {
+        "name": "SECRET_KEY",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_SECRET_KEY"
+      },
+      {
+        "name": "DATABASE_URL",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_DATABASE_URL"
+      },
+      {
+        "name": "DJANGO_SETTINGS_MODULE",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/DJANGO_SETTINGS_MODULE"
+      },
+      {
+        "name": "DJANGO_SUPERUSER_USERNAME",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/DJANGO_SUPERUSER_USERNAME"
+      },
+      {
+        "name": "DJANGO_SUPERUSER_EMAIL",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/DJANGO_SUPERUSER_EMAIL"
+      },
+      {
+        "name": "DJANGO_SUPERUSER_PASSWORD",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/DJANGO_SUPERUSER_PASSWORD"
+      },
+      {
+        "name": "ALLOWED_HOSTS",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/ALLOWED_HOSTS"
+      },
+      {
+        "name": "CORS_ORIGIN_REGEX_WHITELIST",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_CORS_ORIGIN_REGEX_WHITELIST"
+      },
+      {
+        "name": "JWT_COOKIE_SAMESITE",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_JWT_COOKIE_SAMESITE"
+      },
+      {
+        "name": "EMAIL_AUTH_FROM",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/EMAIL_AUTH_FROM"
+      },
+      {
+        "name": "EMAIL_CONTACT_FROM",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/EMAIL_CONTACT_FROM"
+      },
+      {
+        "name": "EMAIL_CONTACT_TO",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/EMAIL_CONTACT_TO"
+      },
+      {
+        "name": "AWS_ACCESS_KEY_ID",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/ACCESS_KEY_ID"
+      },
+      {
+        "name": "AWS_SECRET_ACCESS_KEY",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/SECRET_ACCESS_KEY"
+      },
+      {
+        "name": "AWS_REGION",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/REGION"
+      },
+      {
+        "name": "AWS_S3_BUCKET_NAME",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_S3_BUCKET_NAME"
+      },
+      {
+        "name": "AWS_S3_BUCKET_NAME_STATIC",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_S3_BUCKET_NAME_STATIC"
+      },
+      {
+        "name": "CLOUDMERSIVE_API_KEY",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_CLOUDMERSIVE_API_KEY"
+      }
+    ]
+  },
+  {
+    "name": "frontend_staging",
+    "image": "${FRONTEND_STAGING_ECR}:latest",
+    "cpu": 341,
+    "memoryReservation": 663,
+    "portMappings": [
+      {
+        "containerPort": 3001,
+        "protocol": "tcp"
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "frontend-staging-logs",
+        "awslogs-region": "eu-central-1"
+      }
+    },
+    "essential": true
+  }
+]
