@@ -953,6 +953,11 @@ resource "aws_db_instance" "this" {
   publicly_accessible       = true
   final_snapshot_identifier = "skole-latest-prod-new"
 
+  # Note that if we are creating a cross-region read replica this field
+  # is ignored and we should instead use `kms_key_id` with a valid ARN.
+  # TODO: enable this when we can afford $30/mo.
+  # storage_encrypted = true
+
   lifecycle {
     prevent_destroy = true
   }
@@ -990,6 +995,14 @@ resource "aws_s3_bucket" "media" {
   bucket = "skole-media"
   acl    = "private"
 
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm = "AES256"
+      }
+    }
+  }
+
   cors_rule {
     allowed_headers = ["*"]
     allowed_methods = ["GET"]
@@ -1000,6 +1013,14 @@ resource "aws_s3_bucket" "media" {
 resource "aws_s3_bucket" "staging_media" {
   bucket = "skole-staging-media"
   acl    = "private"
+
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm = "AES256"
+      }
+    }
+  }
 
   cors_rule {
     allowed_headers = ["*"]
@@ -1026,6 +1047,14 @@ resource "aws_s3_bucket" "static" {
 }
 EOF
 
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm = "AES256"
+      }
+    }
+  }
+
   cors_rule {
     allowed_headers = ["*"]
     allowed_methods = ["GET"]
@@ -1050,6 +1079,14 @@ resource "aws_s3_bucket" "staging_static" {
   ]
 }
 EOF
+
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm = "AES256"
+      }
+    }
+  }
 
   cors_rule {
     allowed_headers = ["*"]
