@@ -883,7 +883,7 @@ resource "aws_route53_record" "skole_io" {
 
 resource "aws_route53_record" "skoleapp_com_ses" {
   zone_id = aws_route53_record.skoleapp_com.zone_id
-  name    = "_amazon.skoleapp.com"
+  name    = "_amazonses.skoleapp.com"
   type    = "TXT"
   ttl     = 600
   records = [aws_ses_domain_identity.skoleapp_com.verification_token]
