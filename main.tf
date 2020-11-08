@@ -897,6 +897,15 @@ resource "aws_route53_record" "skoleapp_com_github_verification" {
   records = ["bf7719f874"]
 }
 
+resource "aws_route53_record" "example_amazonses_dkim_record" {
+  count   = 3
+  zone_id = aws_route53_record.skoleapp_com.zone_id
+  name    = "${element(aws_ses_domain_dkim.skoleapp_com.dkim_tokens, count.index)}._domainkey.skoleapp.com"
+  type    = "CNAME"
+  ttl     = "600"
+  records = ["${element(aws_ses_domain_dkim.skoleapp_com.dkim_tokens, count.index)}.dkim.amazonses.com"]
+}
+
 
 resource "aws_route53_health_check" "skoleapp_com" {
   fqdn              = "skoleapp.com"
@@ -1157,6 +1166,9 @@ resource "aws_ses_domain_identity" "skoleapp_com" {
   domain = "skoleapp.com"
 }
 
+resource "aws_ses_domain_dkim" "skoleapp_com" {
+  domain = aws_ses_domain_identity.skoleapp_com.domain
+}
 
 resource "aws_ses_configuration_set" "this" {
   name = "skole-ses-config"
