@@ -52,10 +52,6 @@
         "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_CORS_ORIGIN_REGEX_WHITELIST"
       },
       {
-        "name": "JWT_COOKIE_SAMESITE",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_JWT_COOKIE_SAMESITE"
-      },
-      {
         "name": "EMAIL_AUTH_FROM",
         "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/EMAIL_AUTH_FROM"
       },
