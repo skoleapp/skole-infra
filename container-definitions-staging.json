@@ -3,7 +3,7 @@
     "name": "backend_staging",
     "image": "${BACKEND_STAGING_ECR}:latest",
     "cpu": 170,
-    "memoryReservation": 332,
+    "memoryReservation": 164,
     "portMappings": [
       {
         "containerPort": 8000,
@@ -93,7 +93,7 @@
     "name": "frontend_staging",
     "image": "${FRONTEND_STAGING_ECR}:latest",
     "cpu": 341,
-    "memoryReservation": 663,
+    "memoryReservation": 327,
     "portMappings": [
       {
         "containerPort": 3001,
