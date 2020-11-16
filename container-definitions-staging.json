@@ -48,12 +48,8 @@
         "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/ALLOWED_HOSTS"
       },
       {
-        "name": "CORS_ORIGIN_REGEX_WHITELIST",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_CORS_ORIGIN_REGEX_WHITELIST"
-      },
-      {
-        "name": "JWT_COOKIE_SAMESITE",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_JWT_COOKIE_SAMESITE"
+        "name": "CORS_ALLOWED_ORIGIN_REGEXES",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_CORS_ALLOWED_ORIGIN_REGEXES"
       },
       {
         "name": "EMAIL_AUTH_FROM",
