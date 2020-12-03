@@ -906,6 +906,21 @@ resource "aws_route53_record" "example_amazonses_dkim_record" {
   records = ["${element(aws_ses_domain_dkim.skoleapp_com.dkim_tokens, count.index)}.dkim.amazonses.com"]
 }
 
+resource "aws_route53_record" "skoleapp_com_gmail_verification" {
+  zone_id = aws_route53_record.skoleapp_com.zone_id
+  name    = ""
+  type    = "MX"
+  ttl     = 300
+
+  records = [
+    "5 ALT1.ASPMX.L.GOOGLE.COM.",
+    "5 ALT2.ASPMX.L.GOOGLE.COM.",
+    "10 ALT3.ASPMX.L.GOOGLE.COM.",
+    "10 ALT4.ASPMX.L.GOOGLE.COM.",
+    "15 oaffzqqtrqvihc62qjong2pnj3at6f6q77yr36djmsubhashfe4a.mx-verification.google.com.",
+  ]
+}
+
 
 resource "aws_route53_health_check" "skoleapp_com" {
   fqdn              = "skoleapp.com"
