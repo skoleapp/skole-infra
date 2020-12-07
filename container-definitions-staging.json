@@ -52,7 +52,7 @@
         "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_CORS_ALLOWED_ORIGIN_REGEXES"
       },
       {
-        "name": "EMAIL_AUTH_FROM",
+        "name": "EMAIL_NO_REPLY",
         "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/EMAIL_AUTH_FROM"
       },
       {
@@ -86,6 +86,10 @@
       {
         "name": "CLOUDMERSIVE_API_KEY",
         "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_CLOUDMERSIVE_API_KEY"
+      },
+      {
+        "name": "FRONTEND_URL",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/FRONTEND_URL"
       }
     ]
   },
