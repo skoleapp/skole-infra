@@ -986,6 +986,10 @@ resource "aws_db_instance" "prod" {
   vpc_security_group_ids    = [aws_security_group.sg.id]
   publicly_accessible       = true
   final_snapshot_identifier = "skole-latest-prod"
+  backup_window             = "03:00-03:30"
+  maintenance_window        = "Mon:03:30-Mon:04:00"
+  backup_retention_period   = 14
+  deletion_protection       = true
 
   # Note that if we are creating a cross-region read replica this field
   # is ignored and we should instead use `kms_key_id` with a valid ARN.
@@ -1010,6 +1014,11 @@ resource "aws_db_instance" "staging" {
   vpc_security_group_ids    = [aws_security_group.sg.id]
   publicly_accessible       = true
   final_snapshot_identifier = "skole-latest-staging"
+  backup_window             = "03:00-03:30"
+  maintenance_window        = "Mon:03:30-Mon:04:00"
+  backup_retention_period   = 14
+  apply_immediately         = true
+
   # db.t2.micro doesn't support encryption, but it's fine for staging.
 }
 
