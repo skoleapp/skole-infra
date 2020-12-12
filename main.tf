@@ -983,7 +983,7 @@ resource "aws_db_instance" "prod" {
   db_subnet_group_name      = aws_db_subnet_group.this.name
   vpc_security_group_ids    = [aws_security_group.sg.id]
   publicly_accessible       = true
-  final_snapshot_identifier = "skole-latest-prod-new"
+  final_snapshot_identifier = "skole-latest-prod"
 
   # Note that if we are creating a cross-region read replica this field
   # is ignored and we should instead use `kms_key_id` with a valid ARN.
@@ -995,8 +995,8 @@ resource "aws_db_instance" "prod" {
 }
 
 resource "aws_db_instance" "staging" {
-  identifier                = "skole-rds"
-  name                      = "skole_db"
+  identifier                = "skole-staging-rds"
+  name                      = "skole_staging_db"
   engine                    = "postgres"
   engine_version            = "12.4"
   instance_class            = "db.t2.micro"
@@ -1007,13 +1007,8 @@ resource "aws_db_instance" "staging" {
   db_subnet_group_name      = aws_db_subnet_group.this.name
   vpc_security_group_ids    = [aws_security_group.sg.id]
   publicly_accessible       = true
-  final_snapshot_identifier = "skole-latest-prod-new"
-
+  final_snapshot_identifier = "skole-latest-staging"
   # db.t2.micro doesn't support encryption, but it's fine for staging.
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 resource "aws_db_subnet_group" "this" {
