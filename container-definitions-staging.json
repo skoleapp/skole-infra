@@ -56,10 +56,6 @@
         "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/EMAIL_NO_REPLY"
       },
       {
-        "name": "EMAIL_AUTH_FROM",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/EMAIL_AUTH_FROM"
-      },
-      {
         "name": "EMAIL_CONTACT_FROM",
         "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/EMAIL_CONTACT_FROM"
       },
