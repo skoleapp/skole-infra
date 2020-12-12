@@ -1,9 +1,18 @@
-# hashicorp/aws
+# Providers
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.10.0"
+    }
+  }
+}
 
 provider "aws" {
-  region  = "eu-central-1"
-  version = "~> 3.10.0" # Use the latest patch version.
+  region = "eu-central-1"
 }
+
 
 # Variables
 
