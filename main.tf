@@ -970,8 +970,31 @@ resource "aws_route53_health_check" "www_skole_fi" {
 
 # RDS
 
-resource "aws_db_instance" "this" {
-  # Manages the RDS instance and the prod database.
+resource "aws_db_instance" "prod" {
+  identifier                = "skole-rds"
+  name                      = "skole_db"
+  engine                    = "postgres"
+  engine_version            = "12.4"
+  instance_class            = "db.t2.small"
+  allocated_storage         = 20
+  storage_type              = "gp2"
+  username                  = var.postgres_username
+  password                  = var.postgres_password
+  db_subnet_group_name      = aws_db_subnet_group.this.name
+  vpc_security_group_ids    = [aws_security_group.sg.id]
+  publicly_accessible       = true
+  final_snapshot_identifier = "skole-latest-prod-new"
+
+  # Note that if we are creating a cross-region read replica this field
+  # is ignored and we should instead use `kms_key_id` with a valid ARN.
+  storage_encrypted = true
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "aws_db_instance" "staging" {
   identifier                = "skole-rds"
   name                      = "skole_db"
   engine                    = "postgres"
@@ -986,18 +1009,12 @@ resource "aws_db_instance" "this" {
   publicly_accessible       = true
   final_snapshot_identifier = "skole-latest-prod-new"
 
-  # Note that if we are creating a cross-region read replica this field
-  # is ignored and we should instead use `kms_key_id` with a valid ARN.
-  # TODO: enable this when we can afford $30/mo.
-  # storage_encrypted = true
+  # db.t2.micro doesn't support encryption, but it's fine for staging.
 
   lifecycle {
     prevent_destroy = true
   }
 }
-
-# TODO: make new instance for QA which is in it's own VPC
-#  https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/db_snapshot
 
 resource "aws_db_subnet_group" "this" {
   name       = "skole-rds-subnet-group"
