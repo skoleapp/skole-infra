@@ -1053,6 +1053,10 @@ resource "aws_s3_bucket" "media" {
     }
   }
 
+  versioning {
+    enabled = true
+  }
+
   cors_rule {
     allowed_headers = ["*"]
     allowed_methods = ["GET"]
@@ -1070,6 +1074,10 @@ resource "aws_s3_bucket" "staging_media" {
         sse_algorithm = "AES256"
       }
     }
+  }
+
+  versioning {
+    enabled = true
   }
 
   cors_rule {
