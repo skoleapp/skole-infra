@@ -9,6 +9,8 @@ provider "aws" {
 
 variable "postgres_username" {}
 variable "postgres_password" {}
+variable "postgres_staging_username" {}
+variable "postgres_staging_password" {}
 
 variable "ecr_policy_keep_10" {
   type    = string
@@ -1002,8 +1004,8 @@ resource "aws_db_instance" "staging" {
   instance_class            = "db.t2.micro"
   allocated_storage         = 20
   storage_type              = "gp2"
-  username                  = var.postgres_username
-  password                  = var.postgres_password
+  username                  = var.postgres_staging_username
+  password                  = var.postgres_staging_password
   db_subnet_group_name      = aws_db_subnet_group.this.name
   vpc_security_group_ids    = [aws_security_group.sg.id]
   publicly_accessible       = true
