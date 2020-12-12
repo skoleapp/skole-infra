@@ -922,6 +922,14 @@ resource "aws_route53_record" "skoleapp_com_gmail_verification" {
   ]
 }
 
+resource "aws_route53_record" "simple_analytics" {
+  zone_id = aws_route53_record.skoleapp_com.zone_id
+  name    = "sa"
+  type    = "CNAME"
+  ttl     = "600"
+  records = ["external.simpleanalytics.com."]
+}
+
 
 resource "aws_route53_health_check" "skoleapp_com" {
   fqdn              = "skoleapp.com"
