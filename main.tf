@@ -16,10 +16,10 @@ provider "aws" {
 
 # Variables
 
-variable "postgres_username" {}
-variable "postgres_password" {}
-variable "postgres_staging_username" {}
-variable "postgres_staging_password" {}
+variable "prod_postgres_username" {}
+variable "prod_postgres_password" {}
+variable "staging_postgres_username" {}
+variable "staging_postgres_password" {}
 
 variable "ecr_policy_keep_10" {
   type    = string
@@ -46,12 +46,12 @@ EOF
 
 # Data
 
-data "template_file" "container_definitions" {
-  template = file("container-definitions.json")
+data "template_file" "container_definitions_prod" {
+  template = file("container-definitions-prod.json")
 
   vars = {
-    BACKEND_ECR  = replace(aws_ecr_repository.backend.repository_url, "https://", "")
-    FRONTEND_ECR = replace(aws_ecr_repository.frontend.repository_url, "https://", "")
+    BACKEND_PROD_ECR  = replace(aws_ecr_repository.backend_prod.repository_url, "https://", "")
+    FRONTEND_PROD_ECR = replace(aws_ecr_repository.frontend_prod.repository_url, "https://", "")
   }
 }
 
@@ -136,17 +136,17 @@ resource "aws_iam_instance_profile" "ecs_instance_profile" {
 # VPC
 
 resource "aws_vpc" "prod" {
-  cidr_block           = "10.0.0.0/16"
+  cidr_block           = "10.2.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
-    Name = "skole-vpc"
+    Name = "skole-prod-vpc"
   }
 }
 
 resource "aws_vpc" "staging" {
-  cidr_block           = "10.0.0.0/16"
+  cidr_block           = "172.16.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
 
@@ -154,11 +154,12 @@ resource "aws_vpc" "staging" {
     Name = "skole-staging-vpc"
   }
 }
+
 resource "aws_internet_gateway" "prod" {
   vpc_id = aws_vpc.prod.id
 
   tags = {
-    Name = "skole-igw"
+    Name = "skole-prod-igw"
   }
 }
 
@@ -172,40 +173,40 @@ resource "aws_internet_gateway" "staging" {
 
 resource "aws_subnet" "prod_a" {
   vpc_id                  = aws_vpc.prod.id
-  cidr_block              = "10.0.0.0/24"
+  cidr_block              = "10.2.0.0/24"
   availability_zone       = "eu-central-1a"
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "skole-subnet-a"
+    Name = "skole-prod-subnet-a"
   }
 }
 
 resource "aws_subnet" "prod_b" {
   vpc_id                  = aws_vpc.prod.id
-  cidr_block              = "10.0.24.0/24"
+  cidr_block              = "10.2.24.0/24"
   availability_zone       = "eu-central-1b"
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "skole-subnet-b"
+    Name = "skole-prod-subnet-b"
   }
 }
 
 resource "aws_subnet" "prod_c" {
   vpc_id                  = aws_vpc.prod.id
-  cidr_block              = "10.0.48.0/24"
+  cidr_block              = "10.2.48.0/24"
   availability_zone       = "eu-central-1c"
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "skole-subnet-c"
+    Name = "skole-prod-subnet-c"
   }
 }
 
 resource "aws_subnet" "staging_a" {
   vpc_id                  = aws_vpc.staging.id
-  cidr_block              = "10.0.0.0/24"
+  cidr_block              = "172.16.0.0/24"
   availability_zone       = "eu-central-1a"
   map_public_ip_on_launch = true
 
@@ -216,7 +217,7 @@ resource "aws_subnet" "staging_a" {
 
 resource "aws_subnet" "staging_b" {
   vpc_id                  = aws_vpc.staging.id
-  cidr_block              = "10.0.24.0/24"
+  cidr_block              = "172.16.24.0/24"
   availability_zone       = "eu-central-1b"
   map_public_ip_on_launch = true
 
@@ -227,7 +228,7 @@ resource "aws_subnet" "staging_b" {
 
 resource "aws_subnet" "staging_c" {
   vpc_id                  = aws_vpc.staging.id
-  cidr_block              = "10.0.48.0/24"
+  cidr_block              = "172.16.48.0/24"
   availability_zone       = "eu-central-1c"
   map_public_ip_on_launch = true
 
@@ -245,7 +246,7 @@ resource "aws_route_table" "prod" {
   }
 
   tags = {
-    Name = "skole-rtb"
+    Name = "skole-prod-rtb"
   }
 }
 
@@ -293,7 +294,7 @@ resource "aws_route_table_association" "staging_c" {
 }
 
 resource "aws_security_group" "prod" {
-  name   = "skole-sg"
+  name   = "skole-prod-sg"
   vpc_id = aws_vpc.prod.id
 
   ingress {
@@ -355,7 +356,7 @@ resource "aws_security_group" "staging" {
 }
 
 resource "aws_security_group" "prod_elb" {
-  name   = "skole-elb-sg"
+  name   = "skole-prod-elb-sg"
   vpc_id = aws_vpc.prod.id
 
   ingress {
@@ -399,24 +400,24 @@ resource "aws_security_group" "staging_elb" {
 
 # ECR
 
-resource "aws_ecr_repository" "backend" {
-  name = "backend"
+resource "aws_ecr_repository" "backend_prod" {
+  name = "backend-prod"
 }
 
 resource "aws_ecr_repository" "backend_staging" {
   name = "backend-staging"
 }
 
-resource "aws_ecr_repository" "frontend" {
-  name = "frontend"
+resource "aws_ecr_repository" "frontend_prod" {
+  name = "frontend-prod"
 }
 
 resource "aws_ecr_repository" "frontend_staging" {
   name = "frontend-staging"
 }
 
-resource "aws_ecr_lifecycle_policy" "backend" {
-  repository = aws_ecr_repository.backend.name
+resource "aws_ecr_lifecycle_policy" "backend_prod" {
+  repository = aws_ecr_repository.backend_prod.name
   policy     = var.ecr_policy_keep_10
 }
 
@@ -425,8 +426,8 @@ resource "aws_ecr_lifecycle_policy" "backend_staging" {
   policy     = var.ecr_policy_keep_10
 }
 
-resource "aws_ecr_lifecycle_policy" "frontend" {
-  repository = aws_ecr_repository.frontend.name
+resource "aws_ecr_lifecycle_policy" "frontend_prod" {
+  repository = aws_ecr_repository.frontend_prod.name
   policy     = var.ecr_policy_keep_10
 }
 
@@ -439,7 +440,7 @@ resource "aws_ecr_lifecycle_policy" "frontend_staging" {
 # ECS
 
 resource "aws_ecs_cluster" "prod" {
-  name = "skole-cluster"
+  name = "skole-prod-cluster"
 }
 
 resource "aws_ecs_cluster" "staging" {
@@ -450,7 +451,7 @@ resource "aws_ecs_cluster" "staging" {
 # EC2
 
 resource "aws_autoscaling_group" "prod" {
-  name                 = "skole-asg"
+  name                 = "skole-prod-asg"
   min_size             = 1
   max_size             = 1
   launch_configuration = aws_launch_configuration.prod.name
@@ -458,7 +459,7 @@ resource "aws_autoscaling_group" "prod" {
 
   tag {
     key                 = "Name"
-    value               = "skole-instance"
+    value               = "skole-prod-instance"
     propagate_at_launch = true
   }
 
@@ -487,10 +488,10 @@ resource "aws_autoscaling_group" "staging" {
 
 
 resource "aws_launch_configuration" "prod" {
-  name_prefix          = "skole-lc"
+  name_prefix          = "skole-prod-lc"
   image_id             = "ami-09509e8f8dea8ab83"
   instance_type        = "t2.small"
-  user_data            = "#!/bin/bash\necho ECS_CLUSTER=skole-cluster >> /etc/ecs/ecs.config"
+  user_data            = "#!/bin/bash\necho ECS_CLUSTER=skole-prod-cluster >> /etc/ecs/ecs.config"
   key_name             = "skole"
   security_groups      = [aws_security_group.prod.id]
   iam_instance_profile = aws_iam_instance_profile.ecs_instance_profile.id
@@ -516,7 +517,7 @@ resource "aws_launch_configuration" "staging" {
 
 
 resource "aws_lb" "prod" {
-  name               = "skole-elb"
+  name               = "skole-prod-elb"
   load_balancer_type = "application"
   security_groups    = [aws_security_group.prod_elb.id]
 
@@ -576,7 +577,7 @@ resource "aws_lb_listener" "prod_https" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.frontend.arn
+    target_group_arn = aws_lb_target_group.frontend_prod.arn
   }
 
   depends_on = [aws_acm_certificate_validation.skoleapp_com]
@@ -609,7 +610,7 @@ resource "aws_lb_listener_certificate" "skole_io" {
   depends_on      = [aws_acm_certificate_validation.skole_io]
 }
 
-resource "aws_lb_listener_rule" "http_redirect" {
+resource "aws_lb_listener_rule" "prod_http_redirect" {
   listener_arn = aws_lb_listener.prod_http.arn
   priority     = 1
 
@@ -632,7 +633,7 @@ resource "aws_lb_listener_rule" "http_redirect" {
 }
 
 
-resource "aws_lb_listener_rule" "https_redirect" {
+resource "aws_lb_listener_rule" "prod_https_redirect" {
   listener_arn = aws_lb_listener.prod_https.arn
   priority     = 1
 
@@ -670,13 +671,13 @@ resource "aws_lb_listener_rule" "backend_staging" {
   }
 }
 
-resource "aws_lb_listener_rule" "backend" {
+resource "aws_lb_listener_rule" "backend_prod" {
   listener_arn = aws_lb_listener.prod_https.arn
   priority     = 3
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.backend.arn
+    target_group_arn = aws_lb_target_group.backend_prod.arn
   }
 
   condition {
@@ -687,8 +688,8 @@ resource "aws_lb_listener_rule" "backend" {
 }
 
 
-resource "aws_lb_target_group" "backend" {
-  name        = "backend"
+resource "aws_lb_target_group" "backend_prod" {
+  name        = "backend-prod"
   port        = 80
   protocol    = "HTTP"
   target_type = "instance"
@@ -717,8 +718,8 @@ resource "aws_lb_target_group" "backend_staging" {
   }
 }
 
-resource "aws_lb_target_group" "frontend" {
-  name        = "frontend"
+resource "aws_lb_target_group" "frontend_prod" {
+  name        = "frontend-prod"
   port        = 80
   protocol    = "HTTP"
   target_type = "instance"
@@ -748,7 +749,7 @@ resource "aws_lb_target_group" "frontend_staging" {
 }
 
 resource "aws_ecs_service" "prod" {
-  name                               = "skole-service"
+  name                               = "skole-prod-service"
   cluster                            = aws_ecs_cluster.prod.id
   task_definition                    = aws_ecs_task_definition.prod.family
   desired_count                      = 1
@@ -756,14 +757,14 @@ resource "aws_ecs_service" "prod" {
   deployment_minimum_healthy_percent = 100
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.backend.arn
-    container_name   = "backend"
+    target_group_arn = aws_lb_target_group.backend_prod.arn
+    container_name   = "backend_prod"
     container_port   = 8000
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.frontend.arn
-    container_name   = "frontend"
+    target_group_arn = aws_lb_target_group.frontend_prod.arn
+    container_name   = "frontend_prod"
     container_port   = 3001
   }
 }
@@ -791,10 +792,10 @@ resource "aws_ecs_service" "staging" {
 
 
 resource "aws_ecs_task_definition" "prod" {
-  family = "skole-task"
+  family = "skole-prod-task"
   # TODO make this role in this config.
   execution_role_arn    = "arn:aws:iam::630869177434:role/skole-ecs-execution-role"
-  container_definitions = data.template_file.container_definitions.rendered
+  container_definitions = data.template_file.container_definitions_prod.rendered
 }
 
 resource "aws_ecs_task_definition" "staging" {
@@ -1124,62 +1125,64 @@ resource "aws_route53_health_check" "www_skole_fi" {
 # RDS
 
 resource "aws_db_instance" "prod" {
-  identifier                = "skole-rds"
-  name                      = "skole_db"
-  engine                    = "postgres"
-  engine_version            = "12.4"
-  instance_class            = "db.t2.small"
-  allocated_storage         = 20
-  storage_type              = "gp2"
-  username                  = var.postgres_username
-  password                  = var.postgres_password
-  db_subnet_group_name      = aws_db_subnet_group.prod.name
-  vpc_security_group_ids    = [aws_security_group.prod.id]
-  publicly_accessible       = true
-  final_snapshot_identifier = "skole-latest-prod"
+  identifier        = "skole-prod-rds"
+  name              = "skole_prod_db"
+  engine            = "postgres"
+  engine_version    = "12.4"
+  instance_class    = "db.t2.small"
+  allocated_storage = 20
+  storage_type      = "gp2"
+  username          = var.prod_postgres_username
+  password          = var.prod_postgres_password
+
+  db_subnet_group_name   = aws_db_subnet_group.prod.name
+  vpc_security_group_ids = [aws_security_group.prod.id]
+  publicly_accessible    = false
+
+  final_snapshot_identifier = "skole-prod-final-snapshot"
   backup_window             = "03:00-03:30"
   maintenance_window        = "Mon:03:30-Mon:04:00"
   backup_retention_period   = 14
-  //  deletion_protection       = true
+
+  deletion_protection = true
 
   # Note that if we are creating a cross-region read replica this field
   # is ignored and we should instead use `kms_key_id` with a valid ARN.
   storage_encrypted = true
-
-  //  lifecycle {
-  //    prevent_destroy = true
-  //  }
 }
 
 resource "aws_db_instance" "staging" {
-  identifier                = "skole-staging-rds"
-  name                      = "skole_staging_db"
-  engine                    = "postgres"
-  engine_version            = "12.4"
-  instance_class            = "db.t2.micro"
-  allocated_storage         = 20
-  storage_type              = "gp2"
-  username                  = var.postgres_staging_username
-  password                  = var.postgres_staging_password
-  db_subnet_group_name      = aws_db_subnet_group.staging.name
-  vpc_security_group_ids    = [aws_security_group.staging.id]
-  publicly_accessible       = true
-  final_snapshot_identifier = "skole-latest-staging"
+  identifier        = "skole-staging-rds"
+  name              = "skole_staging_db"
+  engine            = "postgres"
+  engine_version    = "12.4"
+  instance_class    = "db.t2.micro"
+  allocated_storage = 20
+  storage_type      = "gp2"
+  username          = var.staging_postgres_username
+  password          = var.staging_postgres_password
+
+  db_subnet_group_name   = aws_db_subnet_group.staging.name
+  vpc_security_group_ids = [aws_security_group.staging.id]
+  publicly_accessible    = false
+
+  final_snapshot_identifier = "skole-staging-final-snapshot"
   backup_window             = "03:00-03:30"
   maintenance_window        = "Mon:03:30-Mon:04:00"
   backup_retention_period   = 14
-  apply_immediately         = true
+
+  deletion_protection = true
 
   # db.t2.micro doesn't support encryption, but it's fine for staging.
 }
 
 resource "aws_db_subnet_group" "prod" {
-  name       = "skole-rds-subnet-group"
+  name       = "skole-prod-rds-subnet-group"
   subnet_ids = [aws_subnet.prod_a.id, aws_subnet.prod_b.id, aws_subnet.prod_c.id]
 }
 
 resource "aws_db_subnet_group" "staging" {
-  name       = "skole-rds-subnet-group"
+  name       = "skole-staging-rds-subnet-group"
   subnet_ids = [aws_subnet.staging_a.id, aws_subnet.staging_b.id, aws_subnet.staging_c.id]
 }
 
@@ -1203,8 +1206,8 @@ resource "aws_s3_bucket" "terraform_state" {
   }
 }
 
-resource "aws_s3_bucket" "media" {
-  bucket = "skole-media"
+resource "aws_s3_bucket" "prod_media" {
+  bucket = "skole-prod-media"
   acl    = "private"
 
   server_side_encryption_configuration {
@@ -1249,8 +1252,8 @@ resource "aws_s3_bucket" "staging_media" {
   }
 }
 
-resource "aws_s3_bucket" "static" {
-  bucket = "skole-static"
+resource "aws_s3_bucket" "prod_static" {
+  bucket = "skole-prod-static"
   acl    = "private"
   policy = <<EOF
 {
@@ -1261,7 +1264,7 @@ resource "aws_s3_bucket" "static" {
       "Effect": "Allow",
       "Principal": "*",
       "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::skole-static/static/*"
+      "Resource": "arn:aws:s3:::skole-prod-static/static/*"
     }
   ]
 }
@@ -1323,8 +1326,8 @@ resource "aws_s3_bucket_public_access_block" "terraform_state" {
   restrict_public_buckets = true
 }
 
-resource "aws_s3_bucket_public_access_block" "media" {
-  bucket                  = aws_s3_bucket.media.id
+resource "aws_s3_bucket_public_access_block" "prod_media" {
+  bucket                  = aws_s3_bucket.prod_media.id
   block_public_acls       = true
   ignore_public_acls      = true
   block_public_policy     = true
@@ -1339,8 +1342,8 @@ resource "aws_s3_bucket_public_access_block" "staging_media" {
   restrict_public_buckets = true
 }
 
-resource "aws_s3_bucket_public_access_block" "static" {
-  bucket             = aws_s3_bucket.static.id
+resource "aws_s3_bucket_public_access_block" "prod_static" {
+  bucket             = aws_s3_bucket.prod_static.id
   block_public_acls  = true
   ignore_public_acls = true
 }
@@ -1354,16 +1357,16 @@ resource "aws_s3_bucket_public_access_block" "staging_static" {
 
 # Cloudwatch
 
-resource "aws_cloudwatch_log_group" "backend" {
-  name = "backend-logs"
+resource "aws_cloudwatch_log_group" "backend_prod" {
+  name = "backend-prod-logs"
 }
 
 resource "aws_cloudwatch_log_group" "backend_staging" {
   name = "backend-staging-logs"
 }
 
-resource "aws_cloudwatch_log_group" "frontend" {
-  name = "frontend-logs"
+resource "aws_cloudwatch_log_group" "frontend_prod" {
+  name = "frontend-prod-logs"
 }
 
 resource "aws_cloudwatch_log_group" "frontend_staging" {
