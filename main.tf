@@ -135,7 +135,7 @@ resource "aws_iam_instance_profile" "ecs_instance_profile" {
 
 # VPC
 
-resource "aws_vpc" "this" {
+resource "aws_vpc" "prod" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
@@ -145,16 +145,33 @@ resource "aws_vpc" "this" {
   }
 }
 
-resource "aws_internet_gateway" "this" {
-  vpc_id = aws_vpc.this.id
+resource "aws_vpc" "staging" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_support   = true
+  enable_dns_hostnames = true
+
+  tags = {
+    Name = "skole-staging-vpc"
+  }
+}
+resource "aws_internet_gateway" "prod" {
+  vpc_id = aws_vpc.prod.id
 
   tags = {
     Name = "skole-igw"
   }
 }
 
-resource "aws_subnet" "a" {
-  vpc_id                  = aws_vpc.this.id
+resource "aws_internet_gateway" "staging" {
+  vpc_id = aws_vpc.staging.id
+
+  tags = {
+    Name = "skole-staging-igw"
+  }
+}
+
+resource "aws_subnet" "prod_a" {
+  vpc_id                  = aws_vpc.prod.id
   cidr_block              = "10.0.0.0/24"
   availability_zone       = "eu-central-1a"
   map_public_ip_on_launch = true
@@ -164,8 +181,8 @@ resource "aws_subnet" "a" {
   }
 }
 
-resource "aws_subnet" "b" {
-  vpc_id                  = aws_vpc.this.id
+resource "aws_subnet" "prod_b" {
+  vpc_id                  = aws_vpc.prod.id
   cidr_block              = "10.0.24.0/24"
   availability_zone       = "eu-central-1b"
   map_public_ip_on_launch = true
@@ -175,8 +192,8 @@ resource "aws_subnet" "b" {
   }
 }
 
-resource "aws_subnet" "c" {
-  vpc_id                  = aws_vpc.this.id
+resource "aws_subnet" "prod_c" {
+  vpc_id                  = aws_vpc.prod.id
   cidr_block              = "10.0.48.0/24"
   availability_zone       = "eu-central-1c"
   map_public_ip_on_launch = true
@@ -186,12 +203,45 @@ resource "aws_subnet" "c" {
   }
 }
 
-resource "aws_route_table" "this" {
-  vpc_id = aws_vpc.this.id
+resource "aws_subnet" "staging_a" {
+  vpc_id                  = aws_vpc.staging.id
+  cidr_block              = "10.0.0.0/24"
+  availability_zone       = "eu-central-1a"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "skole-staging-subnet-a"
+  }
+}
+
+resource "aws_subnet" "staging_b" {
+  vpc_id                  = aws_vpc.staging.id
+  cidr_block              = "10.0.24.0/24"
+  availability_zone       = "eu-central-1b"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "skole-staging-subnet-b"
+  }
+}
+
+resource "aws_subnet" "staging_c" {
+  vpc_id                  = aws_vpc.staging.id
+  cidr_block              = "10.0.48.0/24"
+  availability_zone       = "eu-central-1c"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "skole-staging-subnet-c"
+  }
+}
+
+resource "aws_route_table" "prod" {
+  vpc_id = aws_vpc.prod.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.this.id
+    gateway_id = aws_internet_gateway.prod.id
   }
 
   tags = {
@@ -199,30 +249,58 @@ resource "aws_route_table" "this" {
   }
 }
 
-resource "aws_route_table_association" "a" {
-  subnet_id      = aws_subnet.a.id
-  route_table_id = aws_route_table.this.id
+resource "aws_route_table" "staging" {
+  vpc_id = aws_vpc.staging.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.staging.id
+  }
+
+  tags = {
+    Name = "skole-staging-rtb"
+  }
 }
 
-resource "aws_route_table_association" "b" {
-  subnet_id      = aws_subnet.b.id
-  route_table_id = aws_route_table.this.id
+resource "aws_route_table_association" "prod_a" {
+  subnet_id      = aws_subnet.prod_a.id
+  route_table_id = aws_route_table.prod.id
 }
 
-resource "aws_route_table_association" "c" {
-  subnet_id      = aws_subnet.c.id
-  route_table_id = aws_route_table.this.id
+resource "aws_route_table_association" "prod_b" {
+  subnet_id      = aws_subnet.prod_b.id
+  route_table_id = aws_route_table.prod.id
 }
 
-resource "aws_security_group" "sg" {
+resource "aws_route_table_association" "prod_c" {
+  subnet_id      = aws_subnet.prod_c.id
+  route_table_id = aws_route_table.prod.id
+}
+
+resource "aws_route_table_association" "staging_a" {
+  subnet_id      = aws_subnet.staging_a.id
+  route_table_id = aws_route_table.staging.id
+}
+
+resource "aws_route_table_association" "staging_b" {
+  subnet_id      = aws_subnet.staging_b.id
+  route_table_id = aws_route_table.staging.id
+}
+
+resource "aws_route_table_association" "staging_c" {
+  subnet_id      = aws_subnet.staging_c.id
+  route_table_id = aws_route_table.staging.id
+}
+
+resource "aws_security_group" "prod" {
   name   = "skole-sg"
-  vpc_id = aws_vpc.this.id
+  vpc_id = aws_vpc.prod.id
 
   ingress {
     from_port       = 0
     to_port         = 65535
     protocol        = "tcp"
-    security_groups = [aws_security_group.elb_sg.id]
+    security_groups = [aws_security_group.prod_elb.id]
   }
 
   ingress {
@@ -245,9 +323,40 @@ resource "aws_security_group" "sg" {
   }
 }
 
-resource "aws_security_group" "elb_sg" {
+resource "aws_security_group" "staging" {
+  name   = "skole-staging-sg"
+  vpc_id = aws_vpc.staging.id
+
+  ingress {
+    from_port       = 0
+    to_port         = 65535
+    protocol        = "tcp"
+    security_groups = [aws_security_group.staging_elb.id]
+  }
+
+  ingress {
+    from_port = 5432
+    to_port   = 5432
+    protocol  = "tcp"
+    self      = true
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  lifecycle {
+    # Allows us to manually add whitelisted IPs for example SSHing.
+    ignore_changes = [ingress]
+  }
+}
+
+resource "aws_security_group" "prod_elb" {
   name   = "skole-elb-sg"
-  vpc_id = aws_vpc.this.id
+  vpc_id = aws_vpc.prod.id
 
   ingress {
     from_port   = 80
@@ -271,9 +380,9 @@ resource "aws_security_group" "elb_sg" {
   }
 }
 
-resource "aws_security_group" "staging_elb_sg" {
+resource "aws_security_group" "staging_elb" {
   name   = "skole-staging-elb-sg"
-  vpc_id = aws_vpc.this.id
+  vpc_id = aws_vpc.staging.id
 
   egress {
     from_port   = 0
@@ -345,7 +454,7 @@ resource "aws_autoscaling_group" "prod" {
   min_size             = 1
   max_size             = 1
   launch_configuration = aws_launch_configuration.prod.name
-  vpc_zone_identifier  = [aws_subnet.a.id, aws_subnet.b.id, aws_subnet.c.id]
+  vpc_zone_identifier  = [aws_subnet.prod_a.id, aws_subnet.prod_b.id, aws_subnet.prod_c.id]
 
   tag {
     key                 = "Name"
@@ -363,7 +472,7 @@ resource "aws_autoscaling_group" "staging" {
   min_size             = 1
   max_size             = 1
   launch_configuration = aws_launch_configuration.staging.name
-  vpc_zone_identifier  = [aws_subnet.a.id, aws_subnet.b.id, aws_subnet.c.id]
+  vpc_zone_identifier  = [aws_subnet.staging_a.id, aws_subnet.staging_b.id, aws_subnet.staging_c.id]
 
   tag {
     key                 = "Name"
@@ -383,7 +492,7 @@ resource "aws_launch_configuration" "prod" {
   instance_type        = "t2.small"
   user_data            = "#!/bin/bash\necho ECS_CLUSTER=skole-cluster >> /etc/ecs/ecs.config"
   key_name             = "skole"
-  security_groups      = [aws_security_group.sg.id]
+  security_groups      = [aws_security_group.prod.id]
   iam_instance_profile = aws_iam_instance_profile.ecs_instance_profile.id
 
   lifecycle {
@@ -397,7 +506,7 @@ resource "aws_launch_configuration" "staging" {
   instance_type        = "t2.micro"
   user_data            = "#!/bin/bash\necho ECS_CLUSTER=skole-staging-cluster >> /etc/ecs/ecs.config"
   key_name             = "skole"
-  security_groups      = [aws_security_group.sg.id]
+  security_groups      = [aws_security_group.staging.id]
   iam_instance_profile = aws_iam_instance_profile.ecs_instance_profile.id
 
   lifecycle {
@@ -409,57 +518,41 @@ resource "aws_launch_configuration" "staging" {
 resource "aws_lb" "prod" {
   name               = "skole-elb"
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.elb_sg.id]
+  security_groups    = [aws_security_group.prod_elb.id]
 
   subnet_mapping {
-    subnet_id = aws_subnet.a.id
+    subnet_id = aws_subnet.prod_a.id
   }
 
   subnet_mapping {
-    subnet_id = aws_subnet.b.id
+    subnet_id = aws_subnet.prod_b.id
   }
 
   subnet_mapping {
-    subnet_id = aws_subnet.c.id
+    subnet_id = aws_subnet.prod_c.id
   }
 }
 
 resource "aws_lb" "staging" {
   name               = "skole-staging-elb"
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.staging_elb_sg.id]
+  security_groups    = [aws_security_group.staging_elb.id]
 
   subnet_mapping {
-    subnet_id = aws_subnet.a.id
+    subnet_id = aws_subnet.staging_a.id
   }
 
   subnet_mapping {
-    subnet_id = aws_subnet.b.id
+    subnet_id = aws_subnet.staging_b.id
   }
 
   subnet_mapping {
-    subnet_id = aws_subnet.c.id
+    subnet_id = aws_subnet.staging_c.id
   }
 }
 
 resource "aws_lb_listener" "prod_http" {
   load_balancer_arn = aws_lb.prod.arn
-  port              = "80"
-  protocol          = "HTTP"
-
-  default_action {
-    type = "redirect"
-
-    redirect {
-      port        = "443"
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
-    }
-  }
-}
-
-resource "aws_lb_listener" "staging_http" {
-  load_balancer_arn = aws_lb.staging.arn
   port              = "80"
   protocol          = "HTTP"
 
@@ -599,7 +692,7 @@ resource "aws_lb_target_group" "backend" {
   port        = 80
   protocol    = "HTTP"
   target_type = "instance"
-  vpc_id      = aws_vpc.this.id
+  vpc_id      = aws_vpc.prod.id
   depends_on  = [aws_lb.prod]
 
   health_check {
@@ -614,8 +707,8 @@ resource "aws_lb_target_group" "backend_staging" {
   port        = 80
   protocol    = "HTTP"
   target_type = "instance"
-  vpc_id      = aws_vpc.this.id
-  depends_on  = [aws_lb.prod]
+  vpc_id      = aws_vpc.staging.id
+  depends_on  = [aws_lb.staging]
 
   health_check {
     interval = 60
@@ -629,7 +722,7 @@ resource "aws_lb_target_group" "frontend" {
   port        = 80
   protocol    = "HTTP"
   target_type = "instance"
-  vpc_id      = aws_vpc.this.id
+  vpc_id      = aws_vpc.prod.id
   depends_on  = [aws_lb.prod]
 
   health_check {
@@ -644,8 +737,8 @@ resource "aws_lb_target_group" "frontend_staging" {
   port        = 80
   protocol    = "HTTP"
   target_type = "instance"
-  vpc_id      = aws_vpc.this.id
-  depends_on  = [aws_lb.prod]
+  vpc_id      = aws_vpc.staging.id
+  depends_on  = [aws_lb.staging]
 
   health_check {
     interval = 60
@@ -1040,8 +1133,8 @@ resource "aws_db_instance" "prod" {
   storage_type              = "gp2"
   username                  = var.postgres_username
   password                  = var.postgres_password
-  db_subnet_group_name      = aws_db_subnet_group.this.name
-  vpc_security_group_ids    = [aws_security_group.sg.id]
+  db_subnet_group_name      = aws_db_subnet_group.prod.name
+  vpc_security_group_ids    = [aws_security_group.prod.id]
   publicly_accessible       = true
   final_snapshot_identifier = "skole-latest-prod"
   backup_window             = "03:00-03:30"
@@ -1068,8 +1161,8 @@ resource "aws_db_instance" "staging" {
   storage_type              = "gp2"
   username                  = var.postgres_staging_username
   password                  = var.postgres_staging_password
-  db_subnet_group_name      = aws_db_subnet_group.this.name
-  vpc_security_group_ids    = [aws_security_group.sg.id]
+  db_subnet_group_name      = aws_db_subnet_group.staging.name
+  vpc_security_group_ids    = [aws_security_group.staging.id]
   publicly_accessible       = true
   final_snapshot_identifier = "skole-latest-staging"
   backup_window             = "03:00-03:30"
@@ -1080,9 +1173,14 @@ resource "aws_db_instance" "staging" {
   # db.t2.micro doesn't support encryption, but it's fine for staging.
 }
 
-resource "aws_db_subnet_group" "this" {
+resource "aws_db_subnet_group" "prod" {
   name       = "skole-rds-subnet-group"
-  subnet_ids = [aws_subnet.a.id, aws_subnet.b.id, aws_subnet.c.id]
+  subnet_ids = [aws_subnet.prod_a.id, aws_subnet.prod_b.id, aws_subnet.prod_c.id]
+}
+
+resource "aws_db_subnet_group" "staging" {
+  name       = "skole-rds-subnet-group"
+  subnet_ids = [aws_subnet.staging_a.id, aws_subnet.staging_b.id, aws_subnet.staging_c.id]
 }
 
 
