@@ -969,8 +969,8 @@ resource "aws_route53_record" "dev_skoleapp_com" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.prod.dns_name
-    zone_id                = aws_lb.prod.zone_id
+    name                   = aws_lb.staging.dns_name
+    zone_id                = aws_lb.staging.zone_id
     evaluate_target_health = true
   }
 }
@@ -981,8 +981,8 @@ resource "aws_route53_record" "dev_api_skoleapp_com" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.prod.dns_name
-    zone_id                = aws_lb.prod.zone_id
+    name                   = aws_lb.staging.dns_name
+    zone_id                = aws_lb.staging.zone_id
     evaluate_target_health = true
   }
 }
