@@ -33,15 +33,15 @@
       },
       {
         "name": "DJANGO_SUPERUSER_USERNAME",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/DJANGO_SUPERUSER_USERNAME"
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_DJANGO_SUPERUSER_USERNAME"
       },
       {
         "name": "DJANGO_SUPERUSER_EMAIL",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/DJANGO_SUPERUSER_EMAIL"
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_DJANGO_SUPERUSER_EMAIL"
       },
       {
         "name": "DJANGO_SUPERUSER_PASSWORD",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/DJANGO_SUPERUSER_PASSWORD"
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_DJANGO_SUPERUSER_PASSWORD"
       },
       {
         "name": "ALLOWED_HOSTS",
@@ -53,19 +53,15 @@
       },
       {
         "name": "EMAIL_NO_REPLY",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/EMAIL_NO_REPLY"
-      },
-      {
-        "name": "EMAIL_AUTH_FROM",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/EMAIL_AUTH_FROM"
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_EMAIL_NO_REPLY"
       },
       {
         "name": "EMAIL_CONTACT_FROM",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/EMAIL_CONTACT_FROM"
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_EMAIL_CONTACT_FROM"
       },
       {
         "name": "EMAIL_CONTACT_TO",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/EMAIL_CONTACT_TO"
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_EMAIL_CONTACT_TO"
       },
       {
         "name": "AWS_ACCESS_KEY_ID",

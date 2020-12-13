@@ -1,14 +1,25 @@
-# hashicorp/aws
+# Providers
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.10.0"
+    }
+  }
+}
 
 provider "aws" {
-  region  = "eu-central-1"
-  version = "~> 3.10.0" # Use the latest patch version.
+  region = "eu-central-1"
 }
+
 
 # Variables
 
 variable "postgres_username" {}
 variable "postgres_password" {}
+variable "postgres_staging_username" {}
+variable "postgres_staging_password" {}
 
 variable "ecr_policy_keep_10" {
   type    = string
@@ -260,6 +271,22 @@ resource "aws_security_group" "elb_sg" {
   }
 }
 
+resource "aws_security_group" "staging_elb_sg" {
+  name   = "skole-staging-elb-sg"
+  vpc_id = aws_vpc.this.id
+
+  egress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  lifecycle {
+    # Allows us to manually add whitelisted IPs.
+    ignore_changes = [ingress]
+  }
+}
 
 # ECR
 
@@ -379,7 +406,7 @@ resource "aws_launch_configuration" "staging" {
 }
 
 
-resource "aws_lb" "this" {
+resource "aws_lb" "prod" {
   name               = "skole-elb"
   load_balancer_type = "application"
   security_groups    = [aws_security_group.elb_sg.id]
@@ -397,8 +424,26 @@ resource "aws_lb" "this" {
   }
 }
 
-resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.this.arn
+resource "aws_lb" "staging" {
+  name               = "skole-staging-elb"
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.staging_elb_sg.id]
+
+  subnet_mapping {
+    subnet_id = aws_subnet.a.id
+  }
+
+  subnet_mapping {
+    subnet_id = aws_subnet.b.id
+  }
+
+  subnet_mapping {
+    subnet_id = aws_subnet.c.id
+  }
+}
+
+resource "aws_lb_listener" "prod_http" {
+  load_balancer_arn = aws_lb.prod.arn
   port              = "80"
   protocol          = "HTTP"
 
@@ -413,8 +458,24 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-resource "aws_lb_listener" "https" {
-  load_balancer_arn = aws_lb.this.arn
+resource "aws_lb_listener" "staging_http" {
+  load_balancer_arn = aws_lb.staging.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+resource "aws_lb_listener" "prod_https" {
+  load_balancer_arn = aws_lb.prod.arn
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
@@ -428,20 +489,35 @@ resource "aws_lb_listener" "https" {
   depends_on = [aws_acm_certificate_validation.skoleapp_com]
 }
 
+resource "aws_lb_listener" "staging_https" {
+  load_balancer_arn = aws_lb.staging.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = aws_acm_certificate.skoleapp_com.arn
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.frontend_staging.arn
+  }
+
+  depends_on = [aws_acm_certificate_validation.skoleapp_com]
+}
+
 resource "aws_lb_listener_certificate" "skole_fi" {
-  listener_arn    = aws_lb_listener.https.arn
+  listener_arn    = aws_lb_listener.prod_https.arn
   certificate_arn = aws_acm_certificate.skole_fi.arn
   depends_on      = [aws_acm_certificate_validation.skole_fi]
 }
 
 resource "aws_lb_listener_certificate" "skole_io" {
-  listener_arn    = aws_lb_listener.https.arn
+  listener_arn    = aws_lb_listener.prod_https.arn
   certificate_arn = aws_acm_certificate.skole_io.arn
   depends_on      = [aws_acm_certificate_validation.skole_io]
 }
 
 resource "aws_lb_listener_rule" "http_redirect" {
-  listener_arn = aws_lb_listener.http.arn
+  listener_arn = aws_lb_listener.prod_http.arn
   priority     = 1
 
   action {
@@ -464,7 +540,7 @@ resource "aws_lb_listener_rule" "http_redirect" {
 
 
 resource "aws_lb_listener_rule" "https_redirect" {
-  listener_arn = aws_lb_listener.https.arn
+  listener_arn = aws_lb_listener.prod_https.arn
   priority     = 1
 
   action {
@@ -486,7 +562,7 @@ resource "aws_lb_listener_rule" "https_redirect" {
 }
 
 resource "aws_lb_listener_rule" "backend_staging" {
-  listener_arn = aws_lb_listener.https.arn
+  listener_arn = aws_lb_listener.staging_https.arn
   priority     = 2
 
   action {
@@ -502,7 +578,7 @@ resource "aws_lb_listener_rule" "backend_staging" {
 }
 
 resource "aws_lb_listener_rule" "backend" {
-  listener_arn = aws_lb_listener.https.arn
+  listener_arn = aws_lb_listener.prod_https.arn
   priority     = 3
 
   action {
@@ -517,22 +593,6 @@ resource "aws_lb_listener_rule" "backend" {
   }
 }
 
-resource "aws_lb_listener_rule" "frontend_staging" {
-  listener_arn = aws_lb_listener.https.arn
-  priority     = 4
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.frontend_staging.arn
-  }
-
-  condition {
-    host_header {
-      values = ["dev.*"]
-    }
-  }
-}
-
 
 resource "aws_lb_target_group" "backend" {
   name        = "backend"
@@ -540,7 +600,7 @@ resource "aws_lb_target_group" "backend" {
   protocol    = "HTTP"
   target_type = "instance"
   vpc_id      = aws_vpc.this.id
-  depends_on  = [aws_lb.this]
+  depends_on  = [aws_lb.prod]
 
   health_check {
     interval = 60
@@ -555,7 +615,7 @@ resource "aws_lb_target_group" "backend_staging" {
   protocol    = "HTTP"
   target_type = "instance"
   vpc_id      = aws_vpc.this.id
-  depends_on  = [aws_lb.this]
+  depends_on  = [aws_lb.prod]
 
   health_check {
     interval = 60
@@ -568,9 +628,9 @@ resource "aws_lb_target_group" "frontend" {
   name        = "frontend"
   port        = 80
   protocol    = "HTTP"
-  target_type = "instance" # TODO: change to "lambda"
+  target_type = "instance"
   vpc_id      = aws_vpc.this.id
-  depends_on  = [aws_lb.this]
+  depends_on  = [aws_lb.prod]
 
   health_check {
     interval = 60
@@ -583,9 +643,9 @@ resource "aws_lb_target_group" "frontend_staging" {
   name        = "frontend-staging"
   port        = 80
   protocol    = "HTTP"
-  target_type = "instance" # TODO: change to "lambda"
+  target_type = "instance"
   vpc_id      = aws_vpc.this.id
-  depends_on  = [aws_lb.this]
+  depends_on  = [aws_lb.prod]
 
   health_check {
     interval = 60
@@ -779,8 +839,8 @@ resource "aws_route53_record" "www_skoleapp_com" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.this.dns_name
-    zone_id                = aws_lb.this.zone_id
+    name                   = aws_lb.prod.dns_name
+    zone_id                = aws_lb.prod.zone_id
     evaluate_target_health = true
   }
 }
@@ -791,8 +851,8 @@ resource "aws_route53_record" "skoleapp_com" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.this.dns_name
-    zone_id                = aws_lb.this.zone_id
+    name                   = aws_lb.prod.dns_name
+    zone_id                = aws_lb.prod.zone_id
     evaluate_target_health = true
   }
 }
@@ -803,8 +863,8 @@ resource "aws_route53_record" "api_skoleapp_com" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.this.dns_name
-    zone_id                = aws_lb.this.zone_id
+    name                   = aws_lb.prod.dns_name
+    zone_id                = aws_lb.prod.zone_id
     evaluate_target_health = true
   }
 }
@@ -815,8 +875,8 @@ resource "aws_route53_record" "dev_skoleapp_com" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.this.dns_name
-    zone_id                = aws_lb.this.zone_id
+    name                   = aws_lb.prod.dns_name
+    zone_id                = aws_lb.prod.zone_id
     evaluate_target_health = true
   }
 }
@@ -827,8 +887,8 @@ resource "aws_route53_record" "dev_api_skoleapp_com" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.this.dns_name
-    zone_id                = aws_lb.this.zone_id
+    name                   = aws_lb.prod.dns_name
+    zone_id                = aws_lb.prod.zone_id
     evaluate_target_health = true
   }
 }
@@ -839,8 +899,8 @@ resource "aws_route53_record" "www_skole_fi" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.this.dns_name
-    zone_id                = aws_lb.this.zone_id
+    name                   = aws_lb.prod.dns_name
+    zone_id                = aws_lb.prod.zone_id
     evaluate_target_health = true
   }
 }
@@ -851,8 +911,8 @@ resource "aws_route53_record" "skole_fi" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.this.dns_name
-    zone_id                = aws_lb.this.zone_id
+    name                   = aws_lb.prod.dns_name
+    zone_id                = aws_lb.prod.zone_id
     evaluate_target_health = true
   }
 }
@@ -863,8 +923,8 @@ resource "aws_route53_record" "www_skole_io" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.this.dns_name
-    zone_id                = aws_lb.this.zone_id
+    name                   = aws_lb.prod.dns_name
+    zone_id                = aws_lb.prod.zone_id
     evaluate_target_health = true
   }
 }
@@ -875,8 +935,8 @@ resource "aws_route53_record" "skole_io" {
   type    = "A"
 
   alias {
-    name                   = aws_lb.this.dns_name
-    zone_id                = aws_lb.this.zone_id
+    name                   = aws_lb.prod.dns_name
+    zone_id                = aws_lb.prod.zone_id
     evaluate_target_health = true
   }
 }
@@ -983,7 +1043,11 @@ resource "aws_db_instance" "prod" {
   db_subnet_group_name      = aws_db_subnet_group.this.name
   vpc_security_group_ids    = [aws_security_group.sg.id]
   publicly_accessible       = true
-  final_snapshot_identifier = "skole-latest-prod-new"
+  final_snapshot_identifier = "skole-latest-prod"
+  backup_window             = "03:00-03:30"
+  maintenance_window        = "Mon:03:30-Mon:04:00"
+  backup_retention_period   = 14
+  deletion_protection       = true
 
   # Note that if we are creating a cross-region read replica this field
   # is ignored and we should instead use `kms_key_id` with a valid ARN.
@@ -995,25 +1059,25 @@ resource "aws_db_instance" "prod" {
 }
 
 resource "aws_db_instance" "staging" {
-  identifier                = "skole-rds"
-  name                      = "skole_db"
+  identifier                = "skole-staging-rds"
+  name                      = "skole_staging_db"
   engine                    = "postgres"
   engine_version            = "12.4"
   instance_class            = "db.t2.micro"
   allocated_storage         = 20
   storage_type              = "gp2"
-  username                  = var.postgres_username
-  password                  = var.postgres_password
+  username                  = var.postgres_staging_username
+  password                  = var.postgres_staging_password
   db_subnet_group_name      = aws_db_subnet_group.this.name
   vpc_security_group_ids    = [aws_security_group.sg.id]
   publicly_accessible       = true
-  final_snapshot_identifier = "skole-latest-prod-new"
+  final_snapshot_identifier = "skole-latest-staging"
+  backup_window             = "03:00-03:30"
+  maintenance_window        = "Mon:03:30-Mon:04:00"
+  backup_retention_period   = 14
+  apply_immediately         = true
 
   # db.t2.micro doesn't support encryption, but it's fine for staging.
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 resource "aws_db_subnet_group" "this" {
