@@ -950,6 +950,13 @@ resource "aws_route53_record" "skoleapp_com" {
   }
 }
 
+resource "aws_route53_record" "skoleapp_com_google_site_verification" {
+  zone_id = aws_route53_zone.skoleapp_com.zone_id
+  name    = "google-site-verification"
+  type    = "TXT"
+  records = ["google-site-verification=7UFK17r2G-QsD7_Kc0UePBfAYAKEcv-JDG0j7gsTI-0"]
+}
+
 resource "aws_route53_record" "api_skoleapp_com" {
   zone_id = aws_route53_zone.skoleapp_com.zone_id
   name    = "api.skoleapp.com"
