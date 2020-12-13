@@ -1,7 +1,7 @@
 [
   {
-    "name": "backend",
-    "image": "${BACKEND_ECR}:latest",
+    "name": "backend_prod",
+    "image": "${BACKEND_PROD_ECR}:latest",
     "cpu": 170,
     "memoryReservation": 332,
     "portMappings": [
@@ -13,7 +13,7 @@
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {
-        "awslogs-group": "backend-logs",
+        "awslogs-group": "backend-prod-logs",
         "awslogs-region": "eu-central-1"
       }
     },
@@ -21,11 +21,11 @@
     "secrets": [
       {
         "name": "SECRET_KEY",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/SECRET_KEY"
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_SECRET_KEY"
       },
       {
         "name": "DATABASE_URL",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/DATABASE_URL"
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_DATABASE_URL"
       },
       {
         "name": "DJANGO_SETTINGS_MODULE",
@@ -33,15 +33,15 @@
       },
       {
         "name": "DJANGO_SUPERUSER_USERNAME",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/DJANGO_SUPERUSER_USERNAME"
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_DJANGO_SUPERUSER_USERNAME"
       },
       {
         "name": "DJANGO_SUPERUSER_EMAIL",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/DJANGO_SUPERUSER_EMAIL"
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_DJANGO_SUPERUSER_EMAIL"
       },
       {
         "name": "DJANGO_SUPERUSER_PASSWORD",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/DJANGO_SUPERUSER_PASSWORD"
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_DJANGO_SUPERUSER_PASSWORD"
       },
       {
         "name": "ALLOWED_HOSTS",
@@ -49,19 +49,19 @@
       },
       {
         "name": "CORS_ALLOWED_ORIGIN_REGEXES",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/CORS_ALLOWED_ORIGIN_REGEXES"
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_CORS_ALLOWED_ORIGIN_REGEXES"
       },
       {
         "name": "EMAIL_NO_REPLY",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/EMAIL_NO_REPLY"
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_EMAIL_NO_REPLY"
       },
       {
         "name": "EMAIL_CONTACT_FROM",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/EMAIL_CONTACT_FROM"
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_EMAIL_CONTACT_FROM"
       },
       {
         "name": "EMAIL_CONTACT_TO",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/EMAIL_CONTACT_TO"
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_EMAIL_CONTACT_TO"
       },
       {
         "name": "AWS_ACCESS_KEY_ID",
@@ -77,11 +77,11 @@
       },
       {
         "name": "AWS_S3_BUCKET_NAME",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/S3_BUCKET_NAME"
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_S3_BUCKET_NAME"
       },
       {
         "name": "AWS_S3_BUCKET_NAME_STATIC",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/S3_BUCKET_NAME_STATIC"
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_S3_BUCKET_NAME_STATIC"
       },
       {
         "name": "CLOUDMERSIVE_API_KEY",
@@ -90,8 +90,8 @@
     ]
   },
   {
-    "name": "frontend",
-    "image": "${FRONTEND_ECR}:latest",
+    "name": "frontend_prod",
+    "image": "${FRONTEND_PROD_ECR}:latest",
     "cpu": 341,
     "memoryReservation": 663,
     "portMappings": [
@@ -103,7 +103,7 @@
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {
-        "awslogs-group": "frontend-logs",
+        "awslogs-group": "frontend-prod-logs",
         "awslogs-region": "eu-central-1"
       }
     },
