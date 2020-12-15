@@ -52,6 +52,10 @@
         "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_CORS_ALLOWED_ORIGIN_REGEXES"
       },
       {
+        "name": "EMAIL_ADDRESS",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_EMAIL_ADDRESS"
+      },
+      {
         "name": "EMAIL_NO_REPLY",
         "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_EMAIL_NO_REPLY"
       },
