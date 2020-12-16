@@ -1052,12 +1052,20 @@ resource "aws_route53_record" "example_amazonses_dkim_record" {
   records = ["${element(aws_ses_domain_dkim.skoleapp_com.dkim_tokens, count.index)}.dkim.amazonses.com"]
 }
 
-resource "aws_route53_record" "skoleapp_com_github_verification" {
+resource "aws_route53_record" "www_skoleapp_com_github_verification" {
   zone_id = aws_route53_record.skoleapp_com.zone_id
-  name    = "_github-challenge-skole-inc.www.skoleapp.com."
+  name    = "_github-challenge-skoleapp.www.skoleapp.com."
   type    = "TXT"
   ttl     = 600
-  records = ["bf7719f874"]
+  records = ["9a964fcd61"]
+}
+
+resource "aws_route53_record" "skoleapp_com_github_verification" {
+  zone_id = aws_route53_record.skoleapp_com.zone_id
+  name    = "_github-challenge-skoleapp.skoleapp.com."
+  type    = "TXT"
+  ttl     = 600
+  records = ["c01dbb25ac"]
 }
 
 resource "aws_route53_record" "skoleapp_com_gmail_verification" {
