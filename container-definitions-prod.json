@@ -56,16 +56,8 @@
         "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_EMAIL_ADDRESS"
       },
       {
-        "name": "EMAIL_NO_REPLY",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_EMAIL_NO_REPLY"
-      },
-      {
-        "name": "EMAIL_CONTACT_FROM",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_EMAIL_CONTACT_FROM"
-      },
-      {
-        "name": "EMAIL_CONTACT_TO",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_EMAIL_CONTACT_TO"
+        "name": "EMAIL_CONTACT_FORM_SENDER",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_EMAIL_CONTACT_FORM_SENDER"
       },
       {
         "name": "AWS_ACCESS_KEY_ID",
