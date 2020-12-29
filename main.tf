@@ -293,6 +293,9 @@ resource "aws_route_table_association" "staging_c" {
   route_table_id = aws_route_table.staging.id
 }
 
+
+# Security groups
+
 resource "aws_security_group" "prod" {
   name   = "skole-prod-sg"
   vpc_id = aws_vpc.prod.id
@@ -390,6 +393,14 @@ resource "aws_security_group" "staging_elb" {
     to_port     = 65535
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    description = "Staging instance elastic IP"
+    cidr_blocks = ["${aws_eip.staging.public_ip}/32"]
   }
 
   lifecycle {
