@@ -515,7 +515,7 @@ resource "aws_launch_configuration" "prod" {
 resource "aws_launch_configuration" "staging" {
   name_prefix          = "skole-staging-lc"
   image_id             = "ami-09509e8f8dea8ab83"
-  instance_type        = "t2.micro"
+  instance_type        = "t2.small"
   user_data            = "#!/bin/bash\necho ECS_CLUSTER=skole-staging-cluster >> /etc/ecs/ecs.config"
   key_name             = "skole"
   security_groups      = [aws_security_group.staging.id]
@@ -785,8 +785,8 @@ resource "aws_ecs_service" "staging" {
   cluster                            = aws_ecs_cluster.staging.id
   task_definition                    = aws_ecs_task_definition.staging.family
   desired_count                      = 1
-  deployment_maximum_percent         = 100
-  deployment_minimum_healthy_percent = 0
+  deployment_maximum_percent         = 200
+  deployment_minimum_healthy_percent = 100
 
   load_balancer {
     target_group_arn = aws_lb_target_group.backend_staging.arn
