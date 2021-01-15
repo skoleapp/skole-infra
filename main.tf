@@ -481,8 +481,9 @@ resource "aws_autoscaling_group" "prod" {
 
 resource "aws_autoscaling_group" "staging" {
   name                 = "skole-staging-asg"
+  desired_capacity     = 1
   min_size             = 1
-  max_size             = 1
+  max_size             = 2
   launch_configuration = aws_launch_configuration.staging.name
   vpc_zone_identifier  = [aws_subnet.staging_a.id, aws_subnet.staging_b.id, aws_subnet.staging_c.id]
 
