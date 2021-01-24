@@ -1096,6 +1096,14 @@ resource "aws_route53_record" "skoleapp_com_gmail_verification" {
   ]
 }
 
+resource "aws_route53_record" "skoleapp_com_gmail_dkim" {
+  zone_id = aws_route53_record.skoleapp_com.zone_id
+  name    = "google._domainkey"
+  type    = "TXT"
+  ttl     = 600
+  records = ["v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6Z7iPj+devxs0EB7hkaJGpyhAtzNJI1MU/u8V3UYuwliBHPvTV9GqOSi36ypIHfEbNhI2U7qMV0vx+noEWqYvWVwxsnqW2/GORC34lHbv4MYevlHDVBQcRPZ6VvroTw7vmziH+E1xm6jeDYvFn4o+S5l9f7EXVmjUwHuUz7vHX94MyhCgD+unDdKrsfRFuQYBED0Os/dKTvkS8iBSjjDNXzh1lgHxfcgyESgapLX8w7dBgsfARjSocZCxDtmGY0QHfXcyTWMKuz432PWdfpquFb79VxGOXxuSr25z04YL5zEOyKXY99qRtmDBiVWLLLZd/AIN/uSQqz7ufc3MiSWPwIDAQAB"]
+}
+
 resource "aws_route53_record" "simple_analytics" {
   zone_id = aws_route53_record.skoleapp_com.zone_id
   name    = "sa"
