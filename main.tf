@@ -1183,7 +1183,7 @@ resource "aws_db_instance" "staging" {
   identifier        = "skole-staging-rds"
   name              = "skole_staging_db"
   engine            = "postgres"
-  engine_version    = "12.4"
+  engine_version    = "13.1"
   instance_class    = "db.t2.micro"
   allocated_storage = 20
   storage_type      = "gp2"
