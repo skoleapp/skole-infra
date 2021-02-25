@@ -1291,20 +1291,6 @@ resource "aws_s3_bucket" "staging_media" {
 resource "aws_s3_bucket" "prod_static" {
   bucket = "skole-prod-static"
   acl    = "private"
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "AddPerm",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::skole-prod-static/static/*"
-    }
-  ]
-}
-EOF
 
   server_side_encryption_configuration {
     rule {
@@ -1324,20 +1310,6 @@ EOF
 resource "aws_s3_bucket" "staging_static" {
   bucket = "skole-staging-static"
   acl    = "private"
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "AddPerm",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::skole-staging-static/static/*"
-    }
-  ]
-}
-EOF
 
   server_side_encryption_configuration {
     rule {
