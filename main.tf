@@ -1077,7 +1077,7 @@ resource "aws_route53_record" "skoleapp_com_github_verification" {
   name    = "_github-challenge-skoleapp.skoleapp.com."
   type    = "TXT"
   ttl     = 600
-  records = ["c01dbb25ac"]
+  records = ["da6b2257fe"]
 }
 
 resource "aws_route53_record" "skoleapp_com_gmail_verification" {
@@ -1351,15 +1351,19 @@ resource "aws_s3_bucket_public_access_block" "staging_media" {
 }
 
 resource "aws_s3_bucket_public_access_block" "prod_static" {
-  bucket             = aws_s3_bucket.prod_static.id
-  block_public_acls  = true
-  ignore_public_acls = true
+  bucket                  = aws_s3_bucket.prod_static.id
+  block_public_acls       = true
+  ignore_public_acls      = true
+  block_public_policy     = true
+  restrict_public_buckets = true
 }
 
 resource "aws_s3_bucket_public_access_block" "staging_static" {
-  bucket             = aws_s3_bucket.staging_static.id
-  block_public_acls  = true
-  ignore_public_acls = true
+  bucket                  = aws_s3_bucket.staging_static.id
+  block_public_acls       = true
+  ignore_public_acls      = true
+  block_public_policy     = true
+  restrict_public_buckets = true
 }
 
 
