@@ -1077,7 +1077,7 @@ resource "aws_route53_record" "skoleapp_com_github_verification" {
   name    = "_github-challenge-skoleapp.skoleapp.com."
   type    = "TXT"
   ttl     = 600
-  records = ["c01dbb25ac"]
+  records = ["da6b2257fe"]
 }
 
 resource "aws_route53_record" "skoleapp_com_gmail_verification" {
