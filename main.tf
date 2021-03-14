@@ -1351,15 +1351,19 @@ resource "aws_s3_bucket_public_access_block" "staging_media" {
 }
 
 resource "aws_s3_bucket_public_access_block" "prod_static" {
-  bucket             = aws_s3_bucket.prod_static.id
-  block_public_acls  = true
-  ignore_public_acls = true
+  bucket                  = aws_s3_bucket.prod_static.id
+  block_public_acls       = true
+  ignore_public_acls      = true
+  block_public_policy     = true
+  restrict_public_buckets = true
 }
 
 resource "aws_s3_bucket_public_access_block" "staging_static" {
-  bucket             = aws_s3_bucket.staging_static.id
-  block_public_acls  = true
-  ignore_public_acls = true
+  bucket                  = aws_s3_bucket.staging_static.id
+  block_public_acls       = true
+  ignore_public_acls      = true
+  block_public_policy     = true
+  restrict_public_buckets = true
 }
 
 
