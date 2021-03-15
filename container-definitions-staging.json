@@ -82,6 +82,10 @@
       {
         "name": "CLOUDMERSIVE_API_KEY",
         "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/CLOUDMERSIVE_API_KEY"
+      },
+      {
+        "name": "FCM_SERVER_KEY",
+        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/FCM_SERVER_KEY"
       }
     ]
   },
