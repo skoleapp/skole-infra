@@ -1164,7 +1164,7 @@ resource "aws_db_instance" "prod" {
   identifier        = "skole-prod-rds"
   name              = "skole_prod_db"
   engine            = "postgres"
-  engine_version    = "12.4"
+  engine_version    = "12"
   instance_class    = "db.t2.small"
   allocated_storage = 20
   storage_type      = "gp2"
@@ -1191,7 +1191,7 @@ resource "aws_db_instance" "staging" {
   identifier        = "skole-staging-rds"
   name              = "skole_staging_db"
   engine            = "postgres"
-  engine_version    = "12.4"
+  engine_version    = "12"
   instance_class    = "db.t2.micro"
   allocated_storage = 20
   storage_type      = "gp2"
