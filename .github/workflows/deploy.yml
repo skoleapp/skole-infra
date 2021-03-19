@@ -21,5 +21,9 @@ jobs:
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v1
 
+      - name: "Terraform init"
+        id: init
+        run: terraform init
+
       - name: "Terraform apply"
         run: terraform apply
