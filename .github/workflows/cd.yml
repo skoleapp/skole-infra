@@ -1,11 +1,11 @@
-name: "Deploy"
+name: "CD"
 on:
   push:
     branches:
       - master
 jobs:
-  build:
-    name: "Deploy infra"
+  deploy-infra:
+    name: "Deploy Infra"
     runs-on: ubuntu-latest
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
