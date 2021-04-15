@@ -32,18 +32,6 @@
         "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/DJANGO_SETTINGS_MODULE"
       },
       {
-        "name": "DJANGO_SUPERUSER_USERNAME",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_DJANGO_SUPERUSER_USERNAME"
-      },
-      {
-        "name": "DJANGO_SUPERUSER_EMAIL",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_DJANGO_SUPERUSER_EMAIL"
-      },
-      {
-        "name": "DJANGO_SUPERUSER_PASSWORD",
-        "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_DJANGO_SUPERUSER_PASSWORD"
-      },
-      {
         "name": "ALLOWED_HOSTS",
         "valueFrom": "arn:aws:ssm:eu-central-1:630869177434:parameter/ALLOWED_HOSTS"
       },
