@@ -1,7 +1,8 @@
 resource "aws_autoscaling_group" "prod" {
   name                 = "skole-prod-asg"
+  desired_capacity     = 1
   min_size             = 1
-  max_size             = 1
+  max_size             = 2
   launch_configuration = aws_launch_configuration.prod.name
   vpc_zone_identifier  = [aws_subnet.prod_a.id, aws_subnet.prod_b.id, aws_subnet.prod_c.id]
 
