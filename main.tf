@@ -20,5 +20,8 @@ provider "aws" {
 
 variable "prod_postgres_username" {}
 variable "prod_postgres_password" {}
+variable "prod_public_key" {}
+
 variable "staging_postgres_username" {}
 variable "staging_postgres_password" {}
+variable "staging_public_key" {}
