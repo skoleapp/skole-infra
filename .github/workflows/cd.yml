@@ -1,8 +1,14 @@
 name: "CD"
+
 on:
   push:
     branches:
       - master
+
+defaults:
+  run:
+    working-directory: terraform
+
 jobs:
   deploy-infra:
     name: "Deploy Infra"
