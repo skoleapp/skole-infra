@@ -19,6 +19,11 @@ resource "aws_iam_policy" "send_ses" {
   policy = data.aws_iam_policy_document.send_ses.json
 }
 
+resource "aws_iam_policy" "get_parameters" {
+  name   = "skole-get-parameters"
+  policy = data.aws_iam_policy_document.get_parameters.json
+}
+
 resource "aws_iam_user_policy" "prod_buckets" {
   name   = "skole-prod-buckets-policy"
   user   = aws_iam_user.backend_prod.name
@@ -59,13 +64,13 @@ resource "aws_iam_user_policy_attachment" "staging_send_ses" {
 resource "aws_iam_role" "ecs_instance" {
   name               = "skole-ecs-instance-role"
   path               = "/"
-  assume_role_policy = data.aws_iam_policy_document.ecs_instance.json
+  assume_role_policy = data.aws_iam_policy_document.assume_ec2.json
 }
 
 resource "aws_iam_role" "ecs_execution" {
   name               = "skole-ecs-execution-role"
   path               = "/"
-  assume_role_policy = data.aws_iam_policy_document.ecs_execution.json
+  assume_role_policy = data.aws_iam_policy_document.assume_ecs_tasks.json
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_instance" {
@@ -73,9 +78,14 @@ resource "aws_iam_role_policy_attachment" "ecs_instance" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
 }
 
-resource "aws_iam_role_policy_attachment" "ecs_execution" {
+resource "aws_iam_role_policy_attachment" "ecs_execution_1" {
   role       = aws_iam_role.ecs_execution.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_execution_2" {
+  role       = aws_iam_role.ecs_execution.name
+  policy_arn = aws_iam_policy.get_parameters.arn
 }
 
 resource "aws_iam_instance_profile" "ecs_instance" {
@@ -127,7 +137,7 @@ data "aws_iam_policy_document" "staging_buckets" {
   }
 }
 
-data "aws_iam_policy_document" "ecs_instance" {
+data "aws_iam_policy_document" "assume_ec2" {
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -138,7 +148,7 @@ data "aws_iam_policy_document" "ecs_instance" {
   }
 }
 
-data "aws_iam_policy_document" "ecs_execution" {
+data "aws_iam_policy_document" "assume_ecs_tasks" {
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -146,5 +156,12 @@ data "aws_iam_policy_document" "ecs_execution" {
       type        = "Service"
       identifiers = ["ecs-tasks.amazonaws.com"]
     }
+  }
+}
+
+data "aws_iam_policy_document" "get_parameters" {
+  statement {
+    actions   = ["ssm:GetParameters"]
+    resources = ["*"]
   }
 }
