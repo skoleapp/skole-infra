@@ -56,12 +56,6 @@ resource "aws_iam_user_policy_attachment" "staging_send_ses" {
   policy_arn = aws_iam_policy.send_ses.arn
 }
 
-resource "aws_iam_role" "ecs_service" {
-  name               = "skole-ecs-service-role"
-  path               = "/"
-  assume_role_policy = data.aws_iam_policy_document.ecs_service.json
-}
-
 resource "aws_iam_role" "ecs_instance" {
   name               = "skole-ecs-instance-role"
   path               = "/"
@@ -72,11 +66,6 @@ resource "aws_iam_role" "ecs_execution" {
   name               = "skole-ecs-execution-role"
   path               = "/"
   assume_role_policy = data.aws_iam_policy_document.ecs_execution.json
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_service" {
-  role       = aws_iam_role.ecs_service.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole"
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_instance" {
@@ -135,17 +124,6 @@ data "aws_iam_policy_document" "staging_buckets" {
     effect    = "Allow"
     actions   = ["s3:*Object"]
     resources = ["${aws_s3_bucket.staging_media.arn}/*", "${aws_s3_bucket.staging_static.arn}/*"]
-  }
-}
-
-data "aws_iam_policy_document" "ecs_service" {
-  statement {
-    actions = ["sts:AssumeRole"]
-
-    principals {
-      type        = "Service"
-      identifiers = ["ecs.amazonaws.com"]
-    }
   }
 }
 
