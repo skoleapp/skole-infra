@@ -79,7 +79,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution" {
 }
 
 resource "aws_iam_instance_profile" "ecs_instance" {
-  name = "ecs-instance-profile"
+  name = "skole-ecs-instance-profile"
   path = "/"
   role = aws_iam_role.ecs_instance.id
 
