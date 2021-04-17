@@ -15,7 +15,7 @@ resource "aws_launch_configuration" "prod" {
   user_data            = "#!/bin/bash\necho ECS_CLUSTER=skole-prod-cluster >> /etc/ecs/ecs.config"
   key_name             = aws_key_pair.prod.key_name
   security_groups      = [aws_security_group.prod.id]
-  iam_instance_profile = aws_iam_instance_profile.ecs_instance_profile.id
+  iam_instance_profile = aws_iam_instance_profile.ecs_instance.id
 
   lifecycle {
     create_before_destroy = true
@@ -29,7 +29,7 @@ resource "aws_launch_configuration" "staging" {
   user_data            = "#!/bin/bash\necho ECS_CLUSTER=skole-staging-cluster >> /etc/ecs/ecs.config"
   key_name             = aws_key_pair.staging.key_name
   security_groups      = [aws_security_group.staging.id]
-  iam_instance_profile = aws_iam_instance_profile.ecs_instance_profile.id
+  iam_instance_profile = aws_iam_instance_profile.ecs_instance.id
 
   lifecycle {
     create_before_destroy = true

@@ -10,6 +10,7 @@ resource "aws_ecs_service" "prod" {
   name                               = "skole-prod-service"
   cluster                            = aws_ecs_cluster.prod.id
   task_definition                    = aws_ecs_task_definition.prod.family
+  iam_role                           = aws_iam_role.ecs_service.arn
   desired_count                      = 1
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
@@ -31,6 +32,7 @@ resource "aws_ecs_service" "staging" {
   name                               = "skole-staging-service"
   cluster                            = aws_ecs_cluster.staging.id
   task_definition                    = aws_ecs_task_definition.staging.family
+  iam_role                           = aws_iam_role.ecs_service.arn
   desired_count                      = 1
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
@@ -49,9 +51,8 @@ resource "aws_ecs_service" "staging" {
 }
 
 resource "aws_ecs_task_definition" "prod" {
-  family = "skole-prod-task"
-  # TODO make this role in this config.
-  execution_role_arn = "arn:aws:iam::630869177434:role/skole-ecs-execution-role"
+  family             = "skole-prod-task"
+  execution_role_arn = aws_iam_role.ecs_execution.arn
   container_definitions = jsonencode(
     [
       {
@@ -157,9 +158,8 @@ resource "aws_ecs_task_definition" "prod" {
 }
 
 resource "aws_ecs_task_definition" "staging" {
-  family = "skole-staging-task"
-  # TODO use the made role here.
-  execution_role_arn = "arn:aws:iam::630869177434:role/skole-ecs-execution-role"
+  family             = "skole-staging-task"
+  execution_role_arn = aws_iam_role.ecs_execution.arn
   container_definitions = jsonencode([
     {
       name : "backend_staging",
