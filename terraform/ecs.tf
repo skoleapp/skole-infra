@@ -55,7 +55,7 @@ resource "aws_ecs_task_definition" "prod" {
     [
       {
         name : "backend_prod",
-        image : "${replace(aws_ecr_repository.backend_prod.repository_url, "https://", "")}:latest",
+        image : "${replace(aws_ecr_repository.backend_prod.repository_url, "https://", "")}:${var.prod_backend_latest_tag}",
         cpu : 170,
         memoryReservation : 332,
         portMappings : [
@@ -133,7 +133,7 @@ resource "aws_ecs_task_definition" "prod" {
       },
       {
         name : "frontend_prod",
-        image : "${replace(aws_ecr_repository.frontend_prod.repository_url, "https://", "")}:latest",
+        image : "${replace(aws_ecr_repository.frontend_prod.repository_url, "https://", "")}:${var.prod_frontend_latest_tag}",
         cpu : 341,
         memoryReservation : 663,
         portMappings : [
@@ -161,7 +161,7 @@ resource "aws_ecs_task_definition" "staging" {
   container_definitions = jsonencode([
     {
       name : "backend_staging",
-      image : "${replace(aws_ecr_repository.backend_staging.repository_url, "https://", "")}:latest",
+      image : "${replace(aws_ecr_repository.backend_staging.repository_url, "https://", "")}:${var.staging_backend_latest_tag}",
       cpu : 170,
       memoryReservation : 332,
       portMappings : [
@@ -239,7 +239,7 @@ resource "aws_ecs_task_definition" "staging" {
     },
     {
       name : "frontend_staging",
-      image : "${replace(aws_ecr_repository.frontend_staging.repository_url, "https://", "")}:latest",
+      image : "${replace(aws_ecr_repository.frontend_staging.repository_url, "https://", "")}:${var.staging_frontend_latest_tag}",
       cpu : 341,
       memoryReservation : 663,
       portMappings : [

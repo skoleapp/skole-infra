@@ -36,6 +36,18 @@ jobs:
       - name: "Checkout code (post merge)"
         uses: actions/checkout@v2
 
+      - name: "Configure AWS credentials"
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: eu-central-1
+
+      - name: "Set dynamic env variables"
+        run: >
+            echo "TF_VAR_prod_backend_latest_tag=$(../.github/get_latest_ecr_tag.sh backend-prod)" >> $GITHUB_ENV
+            && echo "TF_VAR_prod_frontend_latest_tag=$(../.github/get_latest_ecr_tag.sh frontend-prod)" >> $GITHUB_ENV
+            && echo "TF_VAR_staging_backend_latest_tag=$(../.github/get_latest_ecr_tag.sh backend-staging)" >> $GITHUB_ENV
+            && echo "TF_VAR_staging_frontend_latest_tag=$(../.github/get_latest_ecr_tag.sh frontend-staging)" >> $GITHUB_ENV
+
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v1
 
