@@ -79,7 +79,7 @@ resource "aws_ecs_task_definition" "prod" {
           },
           {
             name : "AWS_ACCESS_KEY_ID",
-            valueFrom : "arn:aws:ssm:eu-central-1:630869177434:parameter/ACCESS_KEY_ID"
+            valueFrom : "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_ACCESS_KEY_ID"
           },
           {
             name : "AWS_REGION",
@@ -95,7 +95,7 @@ resource "aws_ecs_task_definition" "prod" {
           },
           {
             name : "AWS_SECRET_ACCESS_KEY",
-            valueFrom : "arn:aws:ssm:eu-central-1:630869177434:parameter/SECRET_ACCESS_KEY"
+            valueFrom : "arn:aws:ssm:eu-central-1:630869177434:parameter/PROD_SECRET_ACCESS_KEY"
           },
           {
             name : "CLOUDMERSIVE_API_KEY",
@@ -185,7 +185,7 @@ resource "aws_ecs_task_definition" "staging" {
         },
         {
           name : "AWS_ACCESS_KEY_ID",
-          valueFrom : "arn:aws:ssm:eu-central-1:630869177434:parameter/ACCESS_KEY_ID"
+          valueFrom : "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_ACCESS_KEY_ID"
         },
         {
           name : "AWS_REGION",
@@ -201,7 +201,7 @@ resource "aws_ecs_task_definition" "staging" {
         },
         {
           name : "AWS_SECRET_ACCESS_KEY",
-          valueFrom : "arn:aws:ssm:eu-central-1:630869177434:parameter/SECRET_ACCESS_KEY"
+          valueFrom : "arn:aws:ssm:eu-central-1:630869177434:parameter/STAGING_SECRET_ACCESS_KEY"
         },
         {
           name : "CLOUDMERSIVE_API_KEY",
