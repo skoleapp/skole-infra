@@ -14,6 +14,11 @@ resource "aws_ecs_service" "prod" {
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
 
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
+
   load_balancer {
     target_group_arn = aws_lb_target_group.backend_prod.arn
     container_name   = "backend_prod"
@@ -34,6 +39,11 @@ resource "aws_ecs_service" "staging" {
   desired_count                      = 1
   deployment_maximum_percent         = 200
   deployment_minimum_healthy_percent = 100
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
+  }
 
   load_balancer {
     target_group_arn = aws_lb_target_group.backend_staging.arn
