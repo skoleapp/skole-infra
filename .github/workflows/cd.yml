@@ -12,15 +12,6 @@ jobs:
   deploy-infra:
     name: "Deploy Infra"
     runs-on: ubuntu-latest
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      TF_VAR_prod_postgres_password: ${{ secrets.TF_VAR_prod_postgres_password }}
-      TF_VAR_prod_postgres_username: ${{ secrets.TF_VAR_prod_postgres_username }}
-      TF_VAR_prod_public_key: ${{ secrets.TF_VAR_prod_public_key }}
-      TF_VAR_staging_postgres_password: ${{ secrets.TF_VAR_staging_postgres_password }}
-      TF_VAR_staging_postgres_username: ${{ secrets.TF_VAR_staging_postgres_username }}
-      TF_VAR_staging_public_key: ${{ secrets.TF_VAR_staging_public_key }}
     steps:
       - name: "Checkout code"
         uses: actions/checkout@v2
@@ -28,14 +19,9 @@ jobs:
       - name: "Configure AWS credentials"
         uses: aws-actions/configure-aws-credentials@cefc5912bc61e2b5a3b049c839fc283c7712d4e0  # v1.5.8
         with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-central-1
-
-      - name: "Set dynamic env variables"
-        run: >
-          echo "TF_VAR_prod_backend_latest_tag=$(../.github/get_latest_ecr_tag.sh backend-prod)" >> $GITHUB_ENV
-          && echo "TF_VAR_prod_frontend_latest_tag=$(../.github/get_latest_ecr_tag.sh frontend-prod)" >> $GITHUB_ENV
-          && echo "TF_VAR_staging_backend_latest_tag=$(../.github/get_latest_ecr_tag.sh backend-staging)" >> $GITHUB_ENV
-          && echo "TF_VAR_staging_frontend_latest_tag=$(../.github/get_latest_ecr_tag.sh frontend-staging)" >> $GITHUB_ENV
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@3d8debd658c92063839bc97da5c2427100420dec  # 1.3.2
@@ -44,5 +30,19 @@ jobs:
         id: init
         run: terraform init
 
+      - name: "Set dynamic env variables"
+        run: >
+          echo "TF_VAR_prod_backend_latest_tag=$(../.github/get_latest_ecr_tag.sh backend-prod)" >> $GITHUB_ENV
+          && echo "TF_VAR_prod_frontend_latest_tag=$(../.github/get_latest_ecr_tag.sh frontend-prod)" >> $GITHUB_ENV
+          && echo "TF_VAR_staging_backend_latest_tag=$(../.github/get_latest_ecr_tag.sh backend-staging)" >> $GITHUB_ENV
+          && echo "TF_VAR_staging_frontend_latest_tag=$(../.github/get_latest_ecr_tag.sh frontend-staging)" >> $GITHUB_ENV
+
       - name: "Terraform apply"
         run: terraform apply -auto-approve -input=false
+        env:
+          TF_VAR_prod_postgres_password: ${{ secrets.TF_VAR_prod_postgres_password }}
+          TF_VAR_prod_postgres_username: ${{ secrets.TF_VAR_prod_postgres_username }}
+          TF_VAR_prod_public_key: ${{ secrets.TF_VAR_prod_public_key }}
+          TF_VAR_staging_postgres_password: ${{ secrets.TF_VAR_staging_postgres_password }}
+          TF_VAR_staging_postgres_username: ${{ secrets.TF_VAR_staging_postgres_username }}
+          TF_VAR_staging_public_key: ${{ secrets.TF_VAR_staging_public_key }}
