@@ -89,6 +89,14 @@ resource "aws_route53_record" "api_skoleapp_com" {
   }
 }
 
+//resource "aws_route53_record" "kube_skoleapp_com" {
+//  zone_id = aws_route53_zone.skoleapp_com.zone_id
+//  name    = "kube"
+//  type    = "CNAME"
+//  ttl     = "300"
+//  records = [kubernetes_service.staging_ingress.status.0.load_balancer.0.ingress.0.hostname]
+//}
+
 resource "aws_route53_record" "dev_skoleapp_com" {
   zone_id = aws_route53_zone.skoleapp_com.zone_id
   name    = "dev.skoleapp.com"
