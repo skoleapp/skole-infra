@@ -156,28 +156,115 @@ resource "aws_route_table_association" "staging_c" {
   route_table_id = aws_route_table.staging.id
 }
 
-data "aws_availability_zones" "available" {}
+resource "aws_security_group" "prod" {
+  name   = "skole-prod-sg"
+  vpc_id = aws_vpc.prod.id
 
-module "staging_eks_vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "3.0.0"
-
-  name                 = "staging-eks-vpc"
-  cidr                 = "172.16.0.0/16"
-  azs                  = data.aws_availability_zones.available.names
-  private_subnets      = ["172.16.1.0/24", "172.16.2.0/24", "172.16.3.0/24"]
-  public_subnets       = ["172.16.4.0/24", "172.16.5.0/24", "172.16.6.0/24"]
-  enable_nat_gateway   = true
-  single_nat_gateway   = true
-  enable_dns_hostnames = true
-
-  public_subnet_tags = {
-    "kubernetes.io/cluster/${local.cluster_name}" = "shared"
-    "kubernetes.io/role/elb"                      = "1"
+  ingress {
+    from_port       = 0
+    to_port         = 65535
+    protocol        = "tcp"
+    security_groups = [aws_security_group.prod_elb.id]
   }
 
-  private_subnet_tags = {
-    "kubernetes.io/cluster/${local.cluster_name}" = "shared"
-    "kubernetes.io/role/internal-elb"             = "1"
+  ingress {
+    from_port = 5432
+    to_port   = 5432
+    protocol  = "tcp"
+    self      = true
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  lifecycle {
+    # Allows us to manually add whitelisted IPs for example SSHing.
+    ignore_changes = [ingress]
+  }
+}
+
+resource "aws_security_group" "staging" {
+  name   = "skole-staging-sg"
+  vpc_id = aws_vpc.staging.id
+
+  ingress {
+    from_port       = 0
+    to_port         = 65535
+    protocol        = "tcp"
+    security_groups = [aws_security_group.staging_elb.id]
+  }
+
+  ingress {
+    from_port = 5432
+    to_port   = 5432
+    protocol  = "tcp"
+    self      = true
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  lifecycle {
+    # Allows us to manually add whitelisted IPs for example SSHing.
+    ignore_changes = [ingress]
+  }
+}
+
+resource "aws_security_group" "prod_elb" {
+  name   = "skole-prod-elb-sg"
+  vpc_id = aws_vpc.prod.id
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_security_group" "staging_elb" {
+  name   = "skole-staging-elb-sg"
+  vpc_id = aws_vpc.staging.id
+
+  egress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    description = "Staging instance elastic IP"
+    cidr_blocks = ["${aws_eip.staging.public_ip}/32"]
+  }
+
+  lifecycle {
+    # Allows us to manually add whitelisted IPs.
+    ignore_changes = [ingress]
   }
 }

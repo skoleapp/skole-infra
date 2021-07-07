@@ -64,7 +64,6 @@ jobs:
         id: plan
         run: terraform plan -no-color -input=false
         env:
-          TF_VAR_aws_account_id: ${{ secrets.TF_VAR_aws_account_id }}
           TF_VAR_prod_postgres_password: ${{ secrets.TF_VAR_prod_postgres_password }}
           TF_VAR_prod_postgres_username: ${{ secrets.TF_VAR_prod_postgres_username }}
           TF_VAR_prod_public_key: ${{ secrets.TF_VAR_prod_public_key }}

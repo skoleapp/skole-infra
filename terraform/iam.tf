@@ -24,17 +24,6 @@ resource "aws_iam_policy" "get_parameters" {
   policy = data.aws_iam_policy_document.get_parameters.json
 }
 
-// TODO: move this in state to be named `eks_worker`
-resource "aws_iam_policy" "eks_worker_policy" {
-  name   = "skole-eks-worker-policy"
-  policy = file("iam-policies/eks-worker-policy.json")
-}
-
-resource "aws_iam_policy" "eks_service_account" {
-  name   = "skole-eks-service-account-policy"
-  policy = file("iam-policies/eks-service-account-policy.json")
-}
-
 resource "aws_iam_user_policy" "prod_buckets" {
   name   = "skole-prod-buckets-policy"
   user   = aws_iam_user.backend_prod.name
@@ -84,12 +73,6 @@ resource "aws_iam_role" "ecs_execution" {
   assume_role_policy = data.aws_iam_policy_document.assume_ecs_tasks.json
 }
 
-resource "aws_iam_role" "eks_service_account" {
-  name               = "skole-eks-service-account-role"
-  path               = "/"
-  assume_role_policy = data.aws_iam_policy_document.assume_eks.json
-}
-
 resource "aws_iam_role_policy_attachment" "ecs_instance" {
   role       = aws_iam_role.ecs_instance.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
@@ -103,11 +86,6 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_1" {
 resource "aws_iam_role_policy_attachment" "ecs_execution_2" {
   role       = aws_iam_role.ecs_execution.name
   policy_arn = aws_iam_policy.get_parameters.arn
-}
-
-resource "aws_iam_role_policy_attachment" "eks_service_account" {
-  role       = aws_iam_role.eks_service_account.name
-  policy_arn = aws_iam_policy.eks_service_account.arn
 }
 
 resource "aws_iam_instance_profile" "ecs_instance" {
@@ -181,16 +159,6 @@ data "aws_iam_policy_document" "assume_ecs_tasks" {
   }
 }
 
-data "aws_iam_policy_document" "assume_eks" {
-  statement {
-    actions = ["sts:AssumeRole"]
-
-    principals {
-      type        = "Service"
-      identifiers = ["sts.amazonaws.com"]
-    }
-  }
-}
 data "aws_iam_policy_document" "get_parameters" {
   statement {
     actions   = ["ssm:GetParameters"]
