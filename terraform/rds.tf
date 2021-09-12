@@ -18,7 +18,7 @@ resource "aws_db_instance" "prod" {
   maintenance_window        = "Mon:03:30-Mon:04:00"
   backup_retention_period   = 14
 
-  deletion_protection = true
+  deletion_protection = false
 
   # Note that if we are creating a cross-region read replica this field
   # is ignored and we should instead use `kms_key_id` with a valid ARN.
@@ -45,7 +45,7 @@ resource "aws_db_instance" "staging" {
   maintenance_window        = "Mon:03:30-Mon:04:00"
   backup_retention_period   = 14
 
-  deletion_protection = true
+  deletion_protection = false
 
   # db.t2.micro doesn't support encryption, but it's fine for staging.
 }
