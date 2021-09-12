@@ -7,6 +7,7 @@ terraform {
   }
 
   backend "s3" {
+    // The state bucket has been created manually outside of terraform.
     bucket  = "skole-terraform-state"
     region  = "eu-central-1"
     key     = "terraform.tfstate"

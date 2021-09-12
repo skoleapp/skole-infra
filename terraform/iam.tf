@@ -1,6 +1,4 @@
-resource "aws_iam_user" "infra" {
-  name = "skole-infra-user"
-}
+// The IAM user that the infra repo is using has been created manually outside of Terraform.
 
 resource "aws_iam_user" "monorepo" {
   name = "skole-monorepo-user"
@@ -34,11 +32,6 @@ resource "aws_iam_user_policy" "staging_buckets" {
   name   = "skole-staging-buckets-policy"
   user   = aws_iam_user.backend_staging.name
   policy = data.aws_iam_policy_document.staging_buckets.json
-}
-
-resource "aws_iam_user_policy_attachment" "infra_admin" {
-  user       = aws_iam_user.infra.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
 resource "aws_iam_user_policy_attachment" "monorepo_ec2" {
